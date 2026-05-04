@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
@@ -166,6 +166,61 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   animation:fadeout 3s 2s ease-out forwards;
 }
 @keyframes fadeout{0%{opacity:1}100%{opacity:0}}
+
+  /* ---- BONUS TRACK ---- */
+  #s-bonus {background:#0a0a0af8;gap:12px;text-align:center}
+  .bonus-card {
+    width:100%;max-width:340px;
+    background: linear-gradient(135deg, #1a0a20, #0a0a1a);
+    border: 2px solid #ff6eb4;
+    border-radius: 14px;
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bonus-card::before {
+    content:'';position:absolute;top:-1px;left:-1px;right:-1px;bottom:-1px;
+    background: linear-gradient(135deg, #ff6eb4, #7f77dd, #ff6eb4);
+    border-radius: 14px;
+    z-index:-1;
+    animation: bonusglow 2s ease-in-out infinite alternate;
+  }
+  @keyframes bonusglow {
+    from {opacity:0.6} to {opacity:1}
+  }
+  .bonus-exclu {
+    font-size:9px;color:#ffb347;letter-spacing:5px;text-transform:uppercase;
+    border:1px solid #ffb347;padding:3px 12px;border-radius:20px;
+    display:inline-block;margin-bottom:8px;
+  }
+  .bonus-title {
+    font-size:22px;font-weight:900;color:#fff;font-style:italic;
+    letter-spacing:1px;margin:4px 0;
+  }
+  .bonus-sub {font-size:10px;color:#aaa;letter-spacing:2px;margin-bottom:12px}
+  .btn-download {
+    background: linear-gradient(135deg, #ff6eb4, #ff90c8);
+    color:#000;border:none;padding:14px 32px;
+    font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+    cursor:pointer;border-radius:8px;font-family:Arial,sans-serif;
+    display:flex;align-items:center;gap:8px;justify-content:center;
+    width:100%;margin-top:4px;
+    box-shadow: 0 4px 20px rgba(255,110,180,0.4);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn-download:active {transform:scale(.96);box-shadow:0 2px 10px rgba(255,110,180,0.3)}
+  .dl-icon {font-size:18px}
+  .bonus-lock {font-size:36px;margin:4px 0}
+  /* ---- MOBILE PERFORMANCE ---- */
+  * { -webkit-transform: translateZ(0); }
+  canvas { 
+    image-rendering: auto;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  #root {
+    -webkit-overflow-scrolling: touch;
+  }
 </style>
 </head>
 <body>
@@ -178,7 +233,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <div style="font-size:9px;color:#666;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px">Jump Edition</div>
   <img src="cover.jpg" style="width:120px;height:120px;object-fit:cover;border:2px solid #ff6eb4;border-radius:8px;margin:2px 0 10px">
   <button class="btn-main" onclick="startGame()">JOUER</button>
-  <div style="font-size:9px;color:#444;letter-spacing:2px;margin-top:10px">Glisse ton doigt pour diriger</div>
+  <div style="font-size:9px;color:#444;letter-spacing:2px;margin-top:10px">Tape à droite ou à gauche de l'écran pour diriger BKRBABYBOY</div>
 </div>
 
 <!-- HUD -->
@@ -257,6 +312,27 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <button class="btn-sec" onclick="startGame()" style="margin-top:10px">REJOUER</button>
 </div>
 
+
+<!-- BONUS SCREEN -->
+<div id="s-bonus" class="screen">
+  <div style="font-size:9px;color:#888;letter-spacing:5px;text-transform:uppercase">Niveau 14 complété</div>
+  <div style="font-size:32px;font-weight:900;color:#ff6eb4;font-style:italic;text-shadow:2px 2px 0 #7f0040">HOODBOYZ<br>DEBLOQUE !</div>
+  <div class="wv" id="wv-bonus" style="justify-content:center"></div>
+  <div class="bonus-card">
+    <div class="bonus-exclu">🎁 EXCLUSIVITE</div>
+    <div class="bonus-lock">🔓</div>
+    <div class="bonus-title" id="bonus-track-name">TITRE BONUS</div>
+    <div class="bonus-sub">Morceau inédit · Réservé aux vrais fans</div>
+    <div class="wv" id="wv-bonus2" style="justify-content:center;margin:8px 0"></div>
+    <a id="bonus-dl-btn" href="#" download class="btn-download">
+      <span class="dl-icon">⬇</span>
+      <span>TÉLÉCHARGER L'EXCLU</span>
+    </a>
+  </div>
+  <div style="font-size:9px;color:#555;letter-spacing:2px;margin-top:4px">Merci d'avoir joué · BABYBOY MUSIK · 22 Mai</div>
+  <button class="btn-main" onclick="showFinalWin()" style="margin-top:10px">VOIR L'ALBUM COMPLET</button>
+</div>
+
 </div><!-- #root -->
 
 <script>
@@ -290,6 +366,14 @@ const TRACKS = [
   "10BANDS","FEMME LIKE U","CLUB31","EXTRA",
   "JUSTE UN SIGNE","HOODBOYZ"
 ];
+
+// BONUS EXCLUSIVE TRACK — add your bonus MP3 file to audio/ folder
+// Then set BONUS_TRACK below:
+const BONUS_TRACK = {
+  name: "BONUS EXCLU",          // change to your bonus track title
+  file: "audio/bonus.mp3",      // add this file to your audio/ folder
+  available: false              // set to true once you add the file
+};
 
 /* ---------- AUDIO CONTEXT ---------- */
 let AC = null;
@@ -456,9 +540,18 @@ let G = {
 /* ---------- RESIZE ---------- */
 function resize() {
   const root = document.getElementById('root');
+  // Use device pixel ratio for crisp rendering on retina/mobile screens
+  const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap at 2x to save GPU
   W = root.offsetWidth;
   H = root.offsetHeight;
-  canvas.width = W; canvas.height = H;
+  // Set canvas internal size to match physical pixels
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  // Keep CSS size at logical pixels
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  // Scale context so all drawing uses logical pixels
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 
 /* ---------- PLATFORM GEN ---------- */
@@ -973,9 +1066,16 @@ function retryLevel() { document.getElementById('s-go').classList.remove('on'); 
 /* ---------- GAME LOOP ---------- */
 const GR = 0.44, JV = -16.5, JVB = -22, MS = 6.5, MF = 16, WALL_DAMP = 0.6;
 
-function gloop() {
+let lastTime = 0;
+function gloop(ts) {
   if (!G.run) return;
-  G.loop = requestAnimationFrame(gloop); G.af++;
+  G.loop = requestAnimationFrame(gloop);
+  // Fixed timestep: cap delta to avoid spiral of death on slow devices
+  const delta = Math.min((ts - lastTime) / (1000/60), 2.5);
+  lastTime = ts;
+  G.af++;
+  // Scale physics by delta so speed is consistent across all devices
+  const DT = delta;
 
   // --- Touch / tilt control: finger position relative to player ---
   if (G.touchX !== null) {
@@ -987,15 +1087,15 @@ function gloop() {
   }
   G.vx = Math.max(-MS, Math.min(MS, G.vx));
 
-  G.vy = Math.min(G.vy + GR, MF);
-  G.px += G.vx; G.py += G.vy;
+  G.vy = Math.min(G.vy + GR * DT, MF);
+  G.px += G.vx * DT; G.py += G.vy * DT;
 
   // --- WALL BOUNCE (instead of wrap) ---
   if (G.px < 14) { G.px = 14; G.vx = Math.abs(G.vx) * WALL_DAMP; }
   if (G.px > W - 14) { G.px = W - 14; G.vx = -Math.abs(G.vx) * WALL_DAMP; }
 
   // --- Platform collision ---
-  G.plats.forEach(p => { if (p.mv) { p.x += p.dir * p.spd; if (p.x < 4 || p.x + p.w > W - 4) p.dir *= -1; } });
+  G.plats.forEach(p => { if (p.mv) { p.x += p.dir * p.spd * DT; if (p.x < 4 || p.x + p.w > W - 4) p.dir *= -1; } });
   if (G.vy > 0) {
     const wf = G.py + 68 + G.cam;  // feet-only collision — player feet at +68px
     G.plats.forEach(p => {
@@ -1014,7 +1114,7 @@ function gloop() {
   const sy = G.py;
   if (sy < H * .42) {
     const diff = H * .42 - sy; G.cam -= diff; G.py += diff;
-    G.score += Math.round(Math.abs(diff) / 2); updateHUD();
+    G.score += Math.round(Math.abs(diff) / 2 * DT); updateHUD();
   }
 
   // --- Fall = game over ---
@@ -1036,7 +1136,7 @@ function gloop() {
   }
 
   // --- Particles ---
-  G.pts = G.pts.filter(p => { p.x += p.vx; p.y += p.vy; p.vy += .12; p.life -= .03; return p.life > 0; });
+  G.pts = G.pts.filter(p => { p.x += p.vx * DT; p.y += p.vy * DT; p.vy += .12 * DT; p.life -= .03 * DT; return p.life > 0; });
 
   // --- RENDER ---
   ctx.clearRect(0, 0, W, H);
@@ -1067,24 +1167,58 @@ function showGO() {
   document.getElementById('go-sc').textContent = G.score;
   document.getElementById('s-go').classList.add('on');
 }
+function makeWaves(id) {
+  const w = document.getElementById(id); if(!w) return; w.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const b = document.createElement('div'); b.className = 'wb';
+    b.style.animationDelay = (i * .1) + 's'; b.style.height = Math.round(4 + Math.random() * 13) + 'px'; w.appendChild(b);
+  }
+}
+
 function showUnlock(idx) {
   document.getElementById('u-num').textContent = 'MORCEAU ' + (idx + 1) + ' / 14';
   document.getElementById('u-name').textContent = TRACKS[idx];
-  ['wv', 'wv2'].forEach(id => {
-    const w = document.getElementById(id); w.innerHTML = '';
-    for (let i = 0; i < 8; i++) {
-      const b = document.createElement('div'); b.className = 'wb';
-      b.style.animationDelay = (i * .1) + 's'; b.style.height = Math.round(4 + Math.random() * 13) + 'px'; w.appendChild(b);
-    }
-  });
+  makeWaves('wv'); makeWaves('wv2');
   loadTrack(idx);
-  document.getElementById('btn-cont').textContent = idx >= 13 ? 'ALBUM COMPLET' : 'NIVEAU ' + (idx + 2) + ' ->';
-  document.getElementById('u-hint').textContent = idx >= 13 ? 'Tu as tout debloque !' : 'Plus que ' + (14 - idx - 1) + ' morceaux !';
+
+  if (idx >= 13) {
+    // Level 14: show normal unlock first, then bonus screen
+    document.getElementById('btn-cont').textContent = 'DECOUVRIR LE BONUS 🎁';
+    document.getElementById('u-hint').textContent = 'Un morceau bonus vous attend...';
+  } else {
+    document.getElementById('btn-cont').textContent = 'NIVEAU ' + (idx + 2) + ' ->';
+    document.getElementById('u-hint').textContent = 'Plus que ' + (14 - idx - 1) + ' morceaux !';
+  }
   document.getElementById('s-unlock').classList.add('on');
+}
+
+function showBonusScreen() {
+  ['s-unlock','s-win','s-go','s-title'].forEach(id => document.getElementById(id).classList.remove('on'));
+  // Setup bonus track
+  document.getElementById('bonus-track-name').textContent = BONUS_TRACK.name;
+  makeWaves('wv-bonus'); makeWaves('wv-bonus2');
+
+  const dlBtn = document.getElementById('bonus-dl-btn');
+  if (BONUS_TRACK.available) {
+    dlBtn.href = BONUS_TRACK.file;
+    dlBtn.download = BONUS_TRACK.name + '.mp3';
+    dlBtn.style.opacity = '1';
+    dlBtn.style.pointerEvents = 'auto';
+  } else {
+    dlBtn.href = '#';
+    dlBtn.onclick = (e) => { e.preventDefault(); alert('Le morceau bonus arrive bientot ! 🎁'); };
+    dlBtn.style.opacity = '0.7';
+  }
+  document.getElementById('s-bonus').classList.add('on');
+}
+
+function showFinalWin() {
+  document.getElementById('s-bonus').classList.remove('on');
+  showWin();
 }
 function continueGame() {
   G.unl++; clearPrev(); document.getElementById('s-unlock').classList.remove('on');
-  if (G.unl >= 14) { showWin(); return; }
+  if (G.unl >= 14) { showBonusScreen(); return; }
   doLevel(G.lvl + 1);
 }
 function showWin() {
@@ -1104,16 +1238,19 @@ document.addEventListener('keyup', e => {
   if (['ArrowLeft','ArrowRight','a','A','d','D'].includes(e.key)) G.touchX = null;
 });
 
-// Touch — finger position drives player
+// Touch — tap left or right half of screen to move in that direction
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   getAC();
-  G.touchX = e.touches[0].clientX;
+  const touchMidX = e.touches[0].clientX;
+  // Left half = move left, right half = move right
+  G.touchX = touchMidX < W / 2 ? G.px - 120 : G.px + 120;
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
-  G.touchX = e.touches[0].clientX;
+  const touchMidX = e.touches[0].clientX;
+  G.touchX = touchMidX < W / 2 ? G.px - 120 : G.px + 120;
 }, { passive: false });
 
 canvas.addEventListener('touchend', e => {
