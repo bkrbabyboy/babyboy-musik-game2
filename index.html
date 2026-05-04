@@ -60,7 +60,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   padding:max(env(safe-area-inset-top,0px),8px) 14px 8px;
   background:#0a0a0aee;border-bottom:2px solid #ff6eb4;
   display:flex;justify-content:space-between;align-items:center;
-  pointer-events:none;z-index:15; 
+  pointer-events:none;z-index:15;
 }
 .hl{font-size:8px;color:#ff6eb4;letter-spacing:2px;text-transform:uppercase}
 .hv{font-size:18px;font-weight:900;color:#fff;line-height:1}
@@ -1320,19 +1320,25 @@ function renderLB() {
   `).join('');
 }
 
+let lbReturnTo = 's-go'; // track where to return after closing LB
+
 function openLB() {
-  // Hide all other screens immediately
+  // Remember where we came from
+  if (document.getElementById('s-go').classList.contains('on')) lbReturnTo = 's-go';
+  else if (document.getElementById('s-win').classList.contains('on')) lbReturnTo = 's-win';
+  else lbReturnTo = 's-title';
+
+  // Hide all other screens
   ['s-go','s-win','s-title','s-unlock','s-bonus'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('on');
   });
-  // Hide HUD too
   document.getElementById('hud').style.display = 'none';
-  // Show LB immediately (don't wait for fetch)
+
+  // Show LB immediately
   document.getElementById('s-lb').classList.add('on');
-  // Render empty state first
   renderLB();
-  // Then fetch and re-render
+
   fetchScores().then(() => {
     renderLB();
     if (pendingScore) {
@@ -1346,11 +1352,15 @@ function openLB() {
 function closeLB() {
   document.getElementById('s-lb').classList.remove('on');
   pendingScore = null;
+
+  // Return to the screen we came from
+  const returnEl = document.getElementById(lbReturnTo);
+  if (returnEl) returnEl.classList.add('on');
+
   // Restore HUD if came from game over
-  if (G.score > 0) {
-    document.getElementById('s-go').classList.add('on');
-  } else {
-    document.getElementById('s-title').classList.add('on');
+  if (lbReturnTo === 's-go') {
+    document.getElementById('hud').style.display = 'flex';
+    updateHUD();
   }
 }
 
