@@ -92,7 +92,15 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 .wv{display:flex;gap:3px;align-items:flex-end;height:20px;justify-content:center}
 .wb{width:4px;background:#ff6eb4;border-radius:1px;animation:wav .7s ease-in-out infinite alternate;animation-play-state:paused}
 .wv.playing .wb{animation-play-state:running}
-@keyframes wav{from{height:3px}to{height:16px}}
+@keyframes wav{0%{height:3px}50%{height:16px}100%{height:5px}}
+.wb:nth-child(1){animation-duration:.6s}
+.wb:nth-child(2){animation-duration:.8s}
+.wb:nth-child(3){animation-duration:.5s}
+.wb:nth-child(4){animation-duration:.9s}
+.wb:nth-child(5){animation-duration:.7s}
+.wb:nth-child(6){animation-duration:.55s}
+.wb:nth-child(7){animation-duration:.85s}
+.wb:nth-child(8){animation-duration:.65s}
 .aplayer{
   width:100%;max-width:340px;background:#111;
   border:1px solid #ff6eb466;border-radius:12px;
@@ -343,30 +351,30 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <!-- UNLOCK -->
 <div id="s-unlock" class="screen">
   <div class="ubadge">Morceau debloque !</div>
-  <div class="wv" id="wv">
-    <div class="wb" style="animation-delay:0s;height:6px"></div>
-    <div class="wb" style="animation-delay:.08s;height:10px"></div>
-    <div class="wb" style="animation-delay:.16s;height:14px"></div>
-    <div class="wb" style="animation-delay:.24s;height:8px"></div>
-    <div class="wb" style="animation-delay:.32s;height:12px"></div>
-    <div class="wb" style="animation-delay:.40s;height:16px"></div>
-    <div class="wb" style="animation-delay:.48s;height:10px"></div>
-    <div class="wb" style="animation-delay:.56s;height:7px"></div>
+  <div class="wv playing" id="wv">
+    <div class="wb" style="animation-delay:0s"></div>
+    <div class="wb" style="animation-delay:.1s"></div>
+    <div class="wb" style="animation-delay:.2s"></div>
+    <div class="wb" style="animation-delay:.3s"></div>
+    <div class="wb" style="animation-delay:.4s"></div>
+    <div class="wb" style="animation-delay:.5s"></div>
+    <div class="wb" style="animation-delay:.6s"></div>
+    <div class="wb" style="animation-delay:.7s"></div>
   </div>
   <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">
     <div class="ucov"><img src="cover.jpg" id="ucov-img" alt="cover"></div>
     <div style="text-align:left">
       <div class="unum" id="u-num"></div>
       <div class="uname" id="u-name"></div>
-      <div class="wv" id="wv2">
-    <div class="wb" style="animation-delay:.05s;height:8px"></div>
-    <div class="wb" style="animation-delay:.13s;height:14px"></div>
-    <div class="wb" style="animation-delay:.21s;height:10px"></div>
-    <div class="wb" style="animation-delay:.29s;height:16px"></div>
-    <div class="wb" style="animation-delay:.37s;height:6px"></div>
-    <div class="wb" style="animation-delay:.45s;height:12px"></div>
-    <div class="wb" style="animation-delay:.53s;height:9px"></div>
-    <div class="wb" style="animation-delay:.61s;height:13px"></div>
+      <div class="wv playing" id="wv2">
+    <div class="wb" style="animation-delay:.05s"></div>
+    <div class="wb" style="animation-delay:.15s"></div>
+    <div class="wb" style="animation-delay:.25s"></div>
+    <div class="wb" style="animation-delay:.35s"></div>
+    <div class="wb" style="animation-delay:.45s"></div>
+    <div class="wb" style="animation-delay:.55s"></div>
+    <div class="wb" style="animation-delay:.65s"></div>
+    <div class="wb" style="animation-delay:.75s"></div>
   </div>
     </div>
   </div>
@@ -412,14 +420,14 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <div style="font-size:9px;color:#888;letter-spacing:5px;text-transform:uppercase">Niveau 14 complété</div>
   <div style="font-size:32px;font-weight:900;color:#ff6eb4;font-style:italic;text-shadow:2px 2px 0 #7f0040">HOODBOYZ<br>DEBLOQUE !</div>
   <div class="wv playing" id="wv-bonus" style="justify-content:center">
-    <div class="wb" style="animation-delay:0s;height:7px"></div>
-    <div class="wb" style="animation-delay:.09s;height:13px"></div>
-    <div class="wb" style="animation-delay:.18s;height:9px"></div>
-    <div class="wb" style="animation-delay:.27s;height:15px"></div>
-    <div class="wb" style="animation-delay:.36s;height:8px"></div>
-    <div class="wb" style="animation-delay:.45s;height:12px"></div>
-    <div class="wb" style="animation-delay:.54s;height:10px"></div>
-    <div class="wb" style="animation-delay:.63s;height:6px"></div>
+    <div class="wb" style="animation-delay:0s"></div>
+    <div class="wb" style="animation-delay:.09s"></div>
+    <div class="wb" style="animation-delay:.18s"></div>
+    <div class="wb" style="animation-delay:.27s"></div>
+    <div class="wb" style="animation-delay:.36s"></div>
+    <div class="wb" style="animation-delay:.45s"></div>
+    <div class="wb" style="animation-delay:.54s"></div>
+    <div class="wb" style="animation-delay:.63s"></div>
   </div>
   <div class="bonus-card">
     <div class="bonus-exclu">🎁 EXCLUSIVITE</div>
@@ -427,14 +435,14 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
     <div class="bonus-title" id="bonus-track-name">TITRE BONUS</div>
     <div class="bonus-sub">Morceau inédit · Réservé aux vrais fans</div>
     <div class="wv playing" id="wv-bonus2" style="justify-content:center;margin:8px 0">
-    <div class="wb" style="animation-delay:.04s;height:11px"></div>
-    <div class="wb" style="animation-delay:.13s;height:7px"></div>
-    <div class="wb" style="animation-delay:.22s;height:15px"></div>
-    <div class="wb" style="animation-delay:.31s;height:9px"></div>
-    <div class="wb" style="animation-delay:.40s;height:13px"></div>
-    <div class="wb" style="animation-delay:.49s;height:6px"></div>
-    <div class="wb" style="animation-delay:.58s;height:14px"></div>
-    <div class="wb" style="animation-delay:.67s;height:8px"></div>
+    <div class="wb" style="animation-delay:.04s"></div>
+    <div class="wb" style="animation-delay:.13s"></div>
+    <div class="wb" style="animation-delay:.22s"></div>
+    <div class="wb" style="animation-delay:.31s"></div>
+    <div class="wb" style="animation-delay:.40s"></div>
+    <div class="wb" style="animation-delay:.49s"></div>
+    <div class="wb" style="animation-delay:.58s"></div>
+    <div class="wb" style="animation-delay:.67s"></div>
   </div>
     <button id="bonus-dl-btn" onclick="downloadBonus()" class="btn-download">
       <span class="dl-icon">⬇</span>
