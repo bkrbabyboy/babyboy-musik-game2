@@ -259,18 +259,18 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 
 /* CONFETTI */
 .confetti-piece {
-  position: fixed;
-  width: 8px;
-  height: 8px;
-  top: -10px;
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  top: -12px;
   pointer-events: none;
   z-index: 9999;
   animation: confetti-fall linear forwards;
 }
 @keyframes confetti-fall {
   0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  80%  { opacity: 1; }
-  100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+  75%  { opacity: 1; }
+  100% { transform: translateY(120vh) rotate(800deg) scale(0.4); opacity: 0; }
 }
 </style>
 </head>
@@ -1788,34 +1788,34 @@ function drawTrail() {
 function launchConfetti() {
   const colors = ['#ff6eb4','#ff90c8','#ffffff','#7f77dd','#ffb347','#ff6eb4','#fff','#ff6eb4'];
   const shapes = ['square','circle','rect'];
-  const count = 80;
+  const count = 90;
+  const root = document.getElementById('root');
+
+  // Temporarily allow overflow so confetti shows over everything
+  root.style.overflow = 'visible';
+  setTimeout(() => { root.style.overflow = 'hidden'; }, 3500);
 
   for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const el = document.createElement('div');
       el.className = 'confetti-piece';
 
-      // Random shape
       const shape = shapes[Math.floor(Math.random() * shapes.length)];
       if (shape === 'circle') el.style.borderRadius = '50%';
-      else if (shape === 'rect') { el.style.width = '4px'; el.style.height = '12px'; }
+      else if (shape === 'rect') { el.style.width = '4px'; el.style.height = '14px'; }
 
-      // Random color
       el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      // Position relative to root (use % of root width)
+      el.style.left = (Math.random() * 100) + '%';
+      el.style.top = '-12px';
 
-      // Random position & speed
-      el.style.left = Math.random() * 100 + 'vw';
-      const duration = 1.2 + Math.random() * 1.8;
+      const duration = 1.4 + Math.random() * 1.8;
       el.style.animationDuration = duration + 's';
-      el.style.animationDelay = (Math.random() * 0.4) + 's';
+      el.style.animationDelay = (Math.random() * 0.5) + 's';
 
-      // Slight horizontal drift via CSS variable
-      el.style.setProperty('--drift', (Math.random() - 0.5) * 200 + 'px');
-
-      document.body.appendChild(el);
-      // Remove after animation
-      setTimeout(() => el.remove(), (duration + 0.6) * 1000);
-    }, i * 18);
+      root.appendChild(el);
+      setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, (duration + 0.8) * 1000);
+    }, i * 15);
   }
 }
 
