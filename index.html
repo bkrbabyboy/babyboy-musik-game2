@@ -418,7 +418,7 @@ const TRACKS = [
 // BONUS EXCLUSIVE TRACK — add your bonus MP3 file to audio/ folder
 // Then set BONUS_TRACK below:
 const BONUS_TRACK = {
-  name: "JEEZY2008 EXCLU",          // change to your bonus track title
+  name: "JEEZY2208 EXCLU",          // change to your bonus track title
   file: "audio/bonus.mp3",      // add this file to your audio/ folder
   available: true              // set to true once you add the file
 };
@@ -1198,6 +1198,7 @@ function showWin() {
 /* ---------- INPUT ---------- */
 // Keyboard (desktop)
 document.addEventListener('keydown', e => {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
   if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { G.touchX = G.px - 80; e.preventDefault(); }
   if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { G.touchX = G.px + 80; e.preventDefault(); }
 });
