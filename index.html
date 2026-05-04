@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>BABYBOY MUSIK</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:#0a0a0a}
+body{
+  height:100%;background:#0a0a0a;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  /* Safari full-screen trick */
+  min-height:100vh;
+  min-height:-webkit-fill-available;
+}
+#root{
+  background:#0a0a0a;color:#fff;font-family:Arial,sans-serif;
+  user-select:none;overflow:hidden;position:relative;
+  width:100%;max-width:430px;
+  /* fill entire viewport including notch areas */
+  height:100vh;
+  height:-webkit-fill-available;
+  touch-action:none;
+}
+canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
+.screen{
+  display:none;position:absolute;top:0;left:0;width:100%;height:100%;
+  flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:all;z-index:20;
+  padding:env(safe-area-inset-top,20px) 16px env(safe-area-inset-bottom,20px);
+}
+.screen.on{display:flex}
+#s-title{background:#0a0a0a;gap:8px;text-align:center}
+.tg{font-size:46px;font-weight:900;color:#ff6eb4;font-style:italic;
+  text-shadow:3px 3px 0 #7f0040;line-height:1;letter-spacing:-1px}
+.btn-main{
+  background:#ff6eb4;color:#000;border:none;
+  padding:16px 56px;font-size:14px;font-weight:900;
+  letter-spacing:4px;text-transform:uppercase;cursor:pointer;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+  font-family:Arial,sans-serif;transition:background .15s,transform .1s;
+  margin-top:8px;display:inline-block;
+}
+.btn-main:active{transform:scale(.95);background:#ff90c8}
+.btn-sec{
+  background:transparent;color:#ff6eb4;border:2px solid #ff6eb4;
+  padding:12px 36px;font-size:12px;font-weight:900;letter-spacing:3px;
+  text-transform:uppercase;cursor:pointer;font-family:Arial,sans-serif;
+}
+.btn-sec:active{background:#ff6eb420}
+
+/* HUD */
+#hud{
+  position:absolute;top:0;left:0;right:0;
+  padding:max(env(safe-area-inset-top,0px),8px) 14px 8px;
+  background:#0a0a0aee;border-bottom:2px solid #ff6eb4;
+  display:flex;justify-content:space-between;align-items:center;
+  pointer-events:none;z-index:15;
+}
+.hl{font-size:8px;color:#ff6eb4;letter-spacing:2px;text-transform:uppercase}
+.hv{font-size:18px;font-weight:900;color:#fff;line-height:1}
+.hc{text-align:center}
+.hlvl{font-size:12px;font-weight:900;color:#fff;letter-spacing:2px}
+.htrk{font-size:8px;color:#ff6eb4;letter-spacing:1px;margin-top:2px;
+  max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* UNLOCK */
+#s-unlock{background:#0a0a0af8;gap:8px;text-align:center}
+.ubadge{font-size:9px;color:#ff6eb4;letter-spacing:4px;text-transform:uppercase;
+  border:1px solid #ff6eb4;padding:4px 14px}
+.ucov{width:120px;height:120px;border:2px solid #ff6eb4;
+  overflow:hidden;flex-shrink:0;border-radius:8px}
+.ucov img{width:100%;height:100%;object-fit:cover}
+.unum{font-size:9px;color:#888;letter-spacing:3px;text-transform:uppercase}
+.uname{font-size:18px;font-weight:900;color:#fff;font-style:italic;
+  letter-spacing:1px;margin:4px 0 6px;max-width:180px}
+.wv{display:flex;gap:3px;align-items:flex-end;height:20px;justify-content:center}
+.wb{width:4px;background:#ff6eb4;border-radius:1px;
+  animation:wav .7s ease-in-out infinite alternate}
+@keyframes wav{from{height:3px}to{height:16px}}
+.aplayer{
+  width:100%;max-width:340px;background:#111;
+  border:1px solid #ff6eb466;border-radius:12px;
+  padding:14px;display:flex;flex-direction:column;gap:10px;
+}
+.apctrl{display:flex;align-items:center;gap:12px}
+.apbtn{
+  background:#ff6eb4;color:#000;border:none;width:44px;height:44px;
+  border-radius:50%;font-size:17px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-weight:900;
+}
+.apbtn:active{transform:scale(.9)}
+.apinfo{flex:1;min-width:0}
+.aptitle{font-size:11px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aptime{font-size:9px;color:#888;margin-top:3px}
+.apbar{width:100%;height:6px;background:#222;border-radius:3px;cursor:pointer}
+.approg{height:6px;background:#ff6eb4;border-radius:3px;
+  width:0%;transition:width .1s linear;pointer-events:none}
+.apstatus{font-size:9px;color:#ff6eb4;text-align:center;min-height:14px}
+.prev-badge{
+  font-size:9px;color:#ffb347;letter-spacing:2px;
+  border:1px solid #ffb34755;padding:3px 10px;border-radius:4px
+}
+.cdring{position:relative;width:46px;height:46px;flex-shrink:0}
+.cdring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.cdring-n{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-size:13px;font-weight:900;color:#ff6eb4
+}
+
+/* WIN */
+#s-win{background:#0a0a0a;gap:10px;text-align:center}
+.winbig{font-size:30px;font-weight:900;color:#ff6eb4;
+  font-style:italic;text-shadow:2px 2px 0 #7f0040;line-height:1.1}
+.twrap{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:360px}
+.ttag{background:#1a1a1a;border:1px solid #ff6eb433;
+  padding:3px 9px;font-size:8px;color:#ff6eb4;letter-spacing:1px;text-transform:uppercase}
+
+/* GAME OVER */
+#s-go{background:#0a0a0af8;gap:12px;text-align:center}
+.gotitle{font-size:38px;font-weight:900;color:#ff6eb4;
+  font-style:italic;text-shadow:2px 2px 0 #7f0040}
+
+/* LEVEL UP */
+#lvo{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:18;
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px
+}
+#lvo.show{display:flex}
+.lvring{position:absolute;border-radius:50%;border:3px solid #ff6eb4;
+  animation:ringout .85s ease-out forwards}
+@keyframes ringout{
+  0%{width:0;height:0;opacity:1;margin:0}
+  100%{width:600px;height:600px;opacity:0;margin:-300px}
+}
+.lvtxt{
+  font-size:38px;font-weight:900;color:#ff6eb4;font-style:italic;
+  text-shadow:0 0 24px #ff6eb4,3px 3px 0 #7f0040;
+  animation:ltx .9s ease-out forwards;letter-spacing:2px;text-align:center
+}
+@keyframes ltx{
+  0%{transform:scale(.2);opacity:0}45%{transform:scale(1.18);opacity:1}
+  75%{transform:scale(.96)}100%{transform:scale(1);opacity:1}
+}
+.lvsub{
+  font-size:11px;color:#fff;letter-spacing:2px;text-transform:uppercase;
+  animation:lsb .9s .2s ease-out forwards;opacity:0;
+  text-align:center;padding:0 24px
+}
+@keyframes lsb{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+
+/* Touch hint */
+#touch-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:#ff6eb455;letter-spacing:2px;text-transform:uppercase;
+  pointer-events:none;z-index:14;white-space:nowrap;
+  animation:fadeout 3s 2s ease-out forwards;
+}
+@keyframes fadeout{0%{opacity:1}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- TITLE -->
+<div id="s-title" class="screen on">
+  <div style="font-size:9px;color:#aaa;letter-spacing:5px;text-transform:uppercase;margin-bottom:2px">BKRBABYBOY presents</div>
+  <div class="tg">BABYBOY<br>MUSIK</div>
+  <div style="font-size:9px;color:#666;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px">Jump Edition</div>
+  <img src="cover.jpg" style="width:120px;height:120px;object-fit:cover;border:2px solid #ff6eb4;border-radius:8px;margin:2px 0 10px">
+  <button class="btn-main" onclick="startGame()">JOUER</button>
+  <div style="font-size:9px;color:#444;letter-spacing:2px;margin-top:10px">Glisse ton doigt pour diriger</div>
+</div>
+
+<!-- HUD -->
+<div id="hud" style="display:none">
+  <div><div class="hl">Score</div><div class="hv" id="h-score">0</div></div>
+  <div class="hc"><div class="hlvl" id="h-level">NIVEAU 1</div><div class="htrk" id="h-track">-</div></div>
+  <div style="text-align:right"><div class="hl">Debloq.</div><div class="hv" id="h-unl">0/14</div></div>
+</div>
+
+<canvas id="gc"></canvas>
+
+<!-- Touch hint -->
+<div id="touch-hint">Glisse gauche / droite</div>
+
+<!-- Level up overlay -->
+<div id="lvo">
+  <div class="lvring" id="lvring"></div>
+  <div class="lvtxt" id="lvtxt">NIVEAU 2</div>
+  <div class="lvsub" id="lvsub">DEBLOQUE !</div>
+</div>
+
+<!-- GAME OVER -->
+<div id="s-go" class="screen">
+  <div class="gotitle">GAME OVER</div>
+  <div style="font-size:12px;color:#aaa;letter-spacing:2px">Tombe au niveau</div>
+  <div style="font-size:34px;font-weight:900;color:#fff" id="go-lvl">1</div>
+  <div style="font-size:12px;color:#666">Score : <span id="go-sc" style="color:#fff;font-weight:900">0</span></div>
+  <button class="btn-main" onclick="retryLevel()" style="margin-top:10px">RECOMMENCER</button>
+  <button class="btn-sec" onclick="showTitle()" style="margin-top:8px">MENU</button>
+</div>
+
+<!-- UNLOCK -->
+<div id="s-unlock" class="screen">
+  <div class="ubadge">Morceau debloque !</div>
+  <div class="wv" id="wv"></div>
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">
+    <div class="ucov"><img src="cover.jpg" id="ucov-img" alt="cover"></div>
+    <div style="text-align:left">
+      <div class="unum" id="u-num"></div>
+      <div class="uname" id="u-name"></div>
+      <div class="wv" id="wv2"></div>
+    </div>
+  </div>
+  <div class="aplayer">
+    <div class="apctrl">
+      <div class="cdring">
+        <svg width="46" height="46" viewBox="0 0 46 46">
+          <circle cx="23" cy="23" r="19" fill="none" stroke="#222" stroke-width="3"/>
+          <circle id="cd-arc" cx="23" cy="23" r="19" fill="none" stroke="#ff6eb4" stroke-width="3"
+            stroke-dasharray="119.4" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="cdring-n" id="cd-num">20</div>
+      </div>
+      <button class="apbtn" id="ap-btn" onclick="togglePlay()">&#9654;</button>
+      <div class="apinfo">
+        <div class="aptitle" id="ap-title">Chargement...</div>
+        <div class="aptime" id="ap-time">0:00 / 0:20</div>
+      </div>
+    </div>
+    <div class="apbar" id="ap-bar" onclick="seekAudio(event)">
+      <div class="approg" id="ap-prog"></div>
+    </div>
+    <div class="apstatus" id="ap-status"></div>
+  </div>
+  <div class="prev-badge">EXTRAIT 20 SEC · ALBUM COMPLET LE 22 MAI</div>
+  <button class="btn-main" id="btn-cont" onclick="continueGame()" style="margin-top:8px"></button>
+  <div style="font-size:10px;color:#555;margin-top:4px" id="u-hint"></div>
+</div>
+
+<!-- WIN -->
+<div id="s-win" class="screen">
+  <div style="font-size:9px;color:#888;letter-spacing:5px;text-transform:uppercase">Album debloque</div>
+  <div class="winbig">BABYBOY MUSIK<br>est a toi !</div>
+  <img src="cover.jpg" style="width:110px;height:110px;object-fit:cover;border:2px solid #ff6eb4;border-radius:8px;margin:4px 0">
+  <div class="twrap" id="win-tracks"></div>
+  <button class="btn-sec" onclick="startGame()" style="margin-top:10px">REJOUER</button>
+</div>
+
+</div><!-- #root -->
+
+<script>
+/* ============================================================
+   BABYBOY MUSIK — Jump Edition v3
+   Mobile-first: finger drag control, wall bounce, no arrows
+   ============================================================ */
+
+const PREVIEW_DURATION = 20;
+const CIRC = 2 * Math.PI * 19;
+
+const TRACK_FILES = [
+  "audio/track_01.mp3","audio/track_02.mp3",
+  "audio/track_03.mp3","audio/track_04.mp3",
+  null,null,null,null,null,null,null,null,null,null
+];
+const TRACKS = [
+  "ARABMONEY FREESTYLE","CLIQUE","MOWEEZY","PUSSYHOLIC",
+  "SOIREE PRIVEE","339CANDY","MISS NAUGHTY","CHUPA CHUPS",
+  "10BANDS","FEMME LIKE U","CLUB31","EXTRA",
+  "JUSTE UN SIGNE","HOODBOYZ"
+];
+
+/* ---------- AUDIO CONTEXT ---------- */
+let AC = null;
+function getAC() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+
+/* ---------- BG MUSIC ---------- */
+let bgAudio = null;
+function startBG() {
+  stopBG();
+  bgAudio = new Audio('audio/bgbeat.mp3');
+  bgAudio.loop = true; bgAudio.volume = 0.5;
+  bgAudio.play().catch(() => {});
+}
+function stopBG() {
+  if (bgAudio) { bgAudio.pause(); bgAudio.currentTime = 0; bgAudio = null; }
+}
+
+/* ---------- PREVIEW PLAYER ---------- */
+let UA = null, previewStart = 0, cdInt = null, prevElapsed = 0;
+
+function loadTrack(idx) {
+  clearPrev();
+  const file = TRACK_FILES[idx];
+  const setStatus = t => document.getElementById('ap-status').textContent = t;
+  const setBtn = h => document.getElementById('ap-btn').innerHTML = h;
+
+  if (!file) {
+    document.getElementById('ap-title').textContent = 'Bientot disponible';
+    setStatus('Ce morceau arrive bientot !'); setBtn('?');
+    document.getElementById('cd-num').textContent = '--'; return;
+  }
+
+  document.getElementById('ap-title').textContent = TRACKS[idx];
+  setBtn('&#9654;'); setStatus('Chargement...');
+  document.getElementById('cd-num').textContent = '20';
+  document.getElementById('ap-prog').style.width = '0%';
+  document.getElementById('ap-time').textContent = '0:00 / 0:20';
+  document.getElementById('cd-arc').style.strokeDashoffset = '0';
+
+  UA = new Audio(file);
+  UA.preload = 'metadata';
+  UA.addEventListener('loadedmetadata', () => {
+    const max = Math.max(0, UA.duration - PREVIEW_DURATION - 2);
+    previewStart = max > 5 ? Math.random() * max : 0;
+    UA.currentTime = previewStart;
+    setStatus('');
+    UA.play().then(() => { setBtn('&#9646;&#9646;'); startCD(); }).catch(() => setStatus('Appuie sur Play'));
+  });
+  UA.addEventListener('error', () => setStatus('Erreur de chargement'));
+  UA.load();
+}
+
+function startCD() {
+  prevElapsed = 0; clearInterval(cdInt);
+  cdInt = setInterval(() => {
+    if (!UA || UA.paused) return;
+    prevElapsed = UA.currentTime - previewStart;
+    const rem = Math.max(0, PREVIEW_DURATION - prevElapsed);
+    const pct = Math.min(1, prevElapsed / PREVIEW_DURATION);
+    document.getElementById('ap-prog').style.width = (pct * 100) + '%';
+    const fmt = t => `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+    document.getElementById('ap-time').textContent = fmt(Math.min(prevElapsed, PREVIEW_DURATION)) + ' / 0:20';
+    document.getElementById('cd-arc').style.strokeDashoffset = CIRC * (1 - pct);
+    document.getElementById('cd-num').textContent = Math.ceil(rem);
+    if (prevElapsed >= PREVIEW_DURATION) {
+      UA.pause(); document.getElementById('ap-btn').innerHTML = '&#9654;';
+      document.getElementById('ap-status').textContent = 'Extrait termine - Album le 22 Mai !';
+      clearInterval(cdInt);
+    }
+  }, 100);
+}
+
+function togglePlay() {
+  if (!UA) return;
+  if (UA.paused) {
+    if (prevElapsed >= PREVIEW_DURATION) { UA.currentTime = previewStart; prevElapsed = 0; }
+    UA.play().then(() => { document.getElementById('ap-btn').innerHTML = '&#9646;&#9646;'; startCD(); }).catch(() => {});
+  } else { UA.pause(); document.getElementById('ap-btn').innerHTML = '&#9654;'; }
+}
+function seekAudio(e) {
+  if (!UA) return;
+  const r = document.getElementById('ap-bar').getBoundingClientRect();
+  prevElapsed = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * PREVIEW_DURATION;
+  UA.currentTime = previewStart + prevElapsed;
+}
+function clearPrev() {
+  clearInterval(cdInt);
+  if (UA) { UA.pause(); UA.src = ''; UA = null; }
+  prevElapsed = 0; previewStart = 0;
+}
+
+/* ---------- SFX ---------- */
+function sfxJump(b) {
+  try {
+    const ac = getAC(), o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    o.type = b ? 'triangle' : 'sine';
+    o.frequency.setValueAtTime(b ? 140 : 260, ac.currentTime);
+    o.frequency.exponentialRampToValueAtTime(b ? 680 : 520, ac.currentTime + .1);
+    g.gain.setValueAtTime(b ? .12 : .08, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .18);
+    o.start(); o.stop(ac.currentTime + .18);
+  } catch(e) {}
+}
+function sfxFall() {
+  try {
+    const ac = getAC(), o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(380, ac.currentTime);
+    o.frequency.exponentialRampToValueAtTime(55, ac.currentTime + .5);
+    g.gain.setValueAtTime(.16, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .5);
+    o.start(); o.stop(ac.currentTime + .5);
+  } catch(e) {}
+}
+function sfxLvl() {
+  try {
+    const ac = getAC();
+    [440, 554, 659, 880].forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination); o.type = 'sine'; o.frequency.value = f;
+      const t = ac.currentTime + i * .09;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.16, t + .04);
+      g.gain.exponentialRampToValueAtTime(.001, t + .35);
+      o.start(t); o.stop(t + .37);
+    });
+  } catch(e) {}
+}
+
+/* ---------- CANVAS ---------- */
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, HUD_H = 52;
+
+/* ---------- DIFFICULTY ---------- */
+function ldiff(lvl) {
+  const l = lvl - 1;
+  return {
+    wMin: Math.max(36, 74 - l * 4),
+    wMax: Math.max(58, 102 - l * 5),
+    gMin: 82 + l * 7,
+    gMax: 115 + l * 9,
+    spd:  0.85 + l * .35,
+    movP: Math.min(.16 + l * .07, .75),
+    bncP: Math.max(.13 - l * .007, .05),
+    tgt:  1400 * lvl
+  };
+}
+
+/* ---------- GAME STATE ---------- */
+let G = {
+  run: false, lvl: 1, score: 0, unl: 0,
+  px: 0, py: 0, vx: 0, vy: 0, cam: 0,
+  plats: [], pts: [],
+  // touch
+  touchX: null,   // current finger X
+  af: 0, loop: null
+};
+
+/* ---------- RESIZE ---------- */
+function resize() {
+  const root = document.getElementById('root');
+  W = root.offsetWidth;
+  H = root.offsetHeight;
+  canvas.width = W; canvas.height = H;
+}
+
+/* ---------- PLATFORM GEN ---------- */
+function genPlats(lvl) {
+  const d = ldiff(lvl);
+  G.plats = [];
+  let y = H - 60;
+  G.plats.push({ x: W / 2 - 55, y, w: 110, b: false, mv: false, dir: 1, spd: 0 });
+  y -= 62;
+  G.plats.push({ x: W / 2 - 32, y, w: 64, b: false, mv: false, dir: 1, spd: 0 });
+  y -= Math.round(d.gMin + Math.random() * (d.gMax - d.gMin));
+  while (y > -20000) {
+    const w = Math.round(d.wMin + Math.random() * (d.wMax - d.wMin));
+    const x = Math.round(Math.random() * (W - w - 12) + 6);
+    const isB = Math.random() < d.bncP;
+    const isM = !isB && Math.random() < d.movP;
+    G.plats.push({ x, y, w, b: isB, mv: isM, dir: Math.random() < .5 ? 1 : -1, spd: d.spd * (.7 + Math.random() * .6) });
+    y -= Math.round(d.gMin + Math.random() * (d.gMax - d.gMin));
+  }
+}
+
+/* ---------- DRAW PLAYER (realistic, smooth SVG-style on canvas) ---------- */
+function drawPlayer(x, y, vx, jump) {
+  ctx.save();
+  ctx.translate(x, y);
+  // face direction
+  if (vx < -0.5) ctx.scale(-1, 1);
+
+  const S = 1.0; // scale
+  ctx.scale(S, S);
+
+  // --- shadow ---
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0, 4, 16, 4, 0, 0, Math.PI * 2); ctx.fill();
+
+  // --- sneakers ---
+  // sole white
+  ctx.fillStyle = '#f0f0f0';
+  ctx.beginPath(); ctx.roundRect(-20, 72, 18, 6, [0, 0, 3, 3]); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(2, 72, 18, 6, [0, 0, 3, 3]); ctx.fill();
+  // upper pink
+  ctx.fillStyle = '#ff8fc8';
+  ctx.beginPath(); ctx.roundRect(-20, 65, 18, 9, [3, 3, 0, 0]); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(2, 65, 18, 9, [3, 3, 0, 0]); ctx.fill();
+  // laces
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath(); ctx.moveTo(-18 + i * 5, 67); ctx.lineTo(-13 + i * 5, 70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4 + i * 5, 67); ctx.lineTo(9 + i * 5, 70); ctx.stroke();
+  }
+  // tongue
+  ctx.fillStyle = '#ffadd6';
+  ctx.beginPath(); ctx.roundRect(-16, 63, 10, 5, 2); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(6, 63, 10, 5, 2); ctx.fill();
+
+  // --- jeans baggy ---
+  ctx.fillStyle = '#1c1c1c';
+  ctx.beginPath(); ctx.roundRect(-20, 40, 17, 28, [3, 3, 0, 0]); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(3, 40, 17, 28, [3, 3, 0, 0]); ctx.fill();
+  // center seam
+  ctx.fillStyle = '#141414';
+  ctx.beginPath(); ctx.roundRect(-2, 40, 4, 20, 1); ctx.fill();
+  // knee fade
+  const kG = ctx.createLinearGradient(0, 50, 0, 65);
+  kG.addColorStop(0, 'rgba(60,60,60,0)'); kG.addColorStop(0.5, 'rgba(60,60,60,0.18)'); kG.addColorStop(1, 'rgba(60,60,60,0)');
+  ctx.fillStyle = kG; ctx.fillRect(-22, 50, 44, 16);
+  // belt
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.roundRect(-20, 38, 40, 5, 1); ctx.fill();
+  ctx.fillStyle = '#888';
+  ctx.beginPath(); ctx.roundRect(-4, 37, 8, 7, 1); ctx.fill();
+  ctx.fillStyle = '#aaa';
+  ctx.beginPath(); ctx.roundRect(-2, 39, 4, 3, 0.5); ctx.fill();
+
+  // --- hoodie body ---
+  // gradient for depth
+  const hG = ctx.createLinearGradient(-22, 10, 22, 42);
+  hG.addColorStop(0, '#ff7ec0'); hG.addColorStop(0.5, '#ff6eb4'); hG.addColorStop(1, '#e05aa0');
+  ctx.fillStyle = hG;
+  ctx.beginPath(); ctx.roundRect(-22, 10, 44, 32, [8, 8, 4, 4]); ctx.fill();
+  // hood fold
+  ctx.fillStyle = '#e85fa0';
+  ctx.beginPath(); ctx.roundRect(-16, 10, 32, 10, [6, 6, 0, 0]); ctx.fill();
+  // kangaroo pocket
+  ctx.fillStyle = '#e05aaa';
+  ctx.beginPath(); ctx.roundRect(-12, 26, 24, 14, [4, 4, 2, 2]); ctx.fill();
+  ctx.fillStyle = '#d04090';
+  // zip line
+  ctx.beginPath(); ctx.roundRect(-1.5, 14, 3, 26, 1); ctx.fill();
+  // drawstrings
+  ctx.strokeStyle = '#c03880'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-7, 12); ctx.quadraticCurveTo(-10, 18, -8, 24); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(7, 12); ctx.quadraticCurveTo(10, 18, 8, 24); ctx.stroke();
+
+  // --- sleeves ---
+  const lOff = jump ? -6 : 0;
+  const slG = ctx.createLinearGradient(-28, 14, -22, 42);
+  slG.addColorStop(0, '#ff7ec0'); slG.addColorStop(1, '#e05aa0');
+  ctx.fillStyle = slG;
+  ctx.beginPath(); ctx.roundRect(-30, 14 + lOff, 12, 26, [5, 5, 3, 3]); ctx.fill();
+  ctx.fillStyle = slG;
+  ctx.beginPath(); ctx.roundRect(18, 14 + lOff, 12, 26, [5, 5, 3, 3]); ctx.fill();
+  // cuffs
+  ctx.fillStyle = '#e85fa0';
+  ctx.beginPath(); ctx.roundRect(-30, 36 + lOff, 12, 5, [0, 0, 3, 3]); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(18, 36 + lOff, 12, 5, [0, 0, 3, 3]); ctx.fill();
+
+  // --- watch on left wrist ---
+  ctx.fillStyle = '#e8e8e8';
+  ctx.beginPath(); ctx.roundRect(-32, 38 + lOff, 13, 7, 2); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-25, 41 + lOff, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#ccc'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.arc(-25, 41 + lOff, 3, 0, Math.PI * 2); ctx.stroke();
+
+  // --- hands ---
+  const skinG = ctx.createRadialGradient(-26, 46 + lOff, 1, -26, 46 + lOff, 8);
+  skinG.addColorStop(0, '#c8865a'); skinG.addColorStop(1, '#b07040');
+  ctx.fillStyle = skinG;
+  ctx.beginPath(); ctx.ellipse(-26, 46 + lOff, 8, 7, 0, 0, Math.PI * 2); ctx.fill();
+  const skinG2 = ctx.createRadialGradient(26, 46 + lOff, 1, 26, 46 + lOff, 8);
+  skinG2.addColorStop(0, '#c8865a'); skinG2.addColorStop(1, '#b07040');
+  ctx.fillStyle = skinG2;
+  ctx.beginPath(); ctx.ellipse(26, 46 + lOff, 8, 7, 0, 0, Math.PI * 2); ctx.fill();
+
+  // --- neck ---
+  ctx.fillStyle = '#b8784a';
+  ctx.beginPath(); ctx.roundRect(-7, 1, 14, 12, [3, 3, 0, 0]); ctx.fill();
+
+  // --- face (realistic gradient skin) ---
+  const faceG = ctx.createRadialGradient(0, -14, 2, 0, -14, 20);
+  faceG.addColorStop(0, '#c8865a'); faceG.addColorStop(0.7, '#b8784a'); faceG.addColorStop(1, '#a06838');
+  ctx.fillStyle = faceG;
+  ctx.beginPath(); ctx.roundRect(-18, -30, 36, 34, [12, 12, 8, 8]); ctx.fill();
+  // jaw shadow
+  const jawG = ctx.createLinearGradient(0, -4, 0, 4);
+  jawG.addColorStop(0, 'rgba(0,0,0,0)'); jawG.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = jawG; ctx.beginPath(); ctx.roundRect(-14, -2, 28, 8, 4); ctx.fill();
+
+  // --- ears ---
+  ctx.fillStyle = '#a87040';
+  ctx.beginPath(); ctx.ellipse(-19, -16, 4, 5.5, 0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(19, -16, 4, 5.5, -0.1, 0, Math.PI * 2); ctx.fill();
+  // inner ear
+  ctx.fillStyle = '#986030';
+  ctx.beginPath(); ctx.ellipse(-19, -16, 2, 3.5, 0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(19, -16, 2, 3.5, -0.1, 0, Math.PI * 2); ctx.fill();
+
+  // --- LEFT EARRING — diamond stud ---
+  const egG = ctx.createRadialGradient(-23, -10, 0.5, -23, -10, 4);
+  egG.addColorStop(0, '#fff9c4'); egG.addColorStop(0.4, '#ffe066'); egG.addColorStop(1, '#d4a800');
+  ctx.fillStyle = egG;
+  ctx.beginPath(); ctx.arc(-23, -10, 4, 0, Math.PI * 2); ctx.fill();
+  // gem facets
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath(); ctx.arc(-23, -10, 2.2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath(); ctx.arc(-24.2, -11.2, 0.9, 0, Math.PI * 2); ctx.fill();
+  // sparkle lines
+  ctx.strokeStyle = '#ffe066'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+  [[-23,-15,-23,-17],[-23,-5,-23,-3],[-27,-10,-29,-10],[-19,-10,-17,-10],[-26,-13,-27.5,-14.5],[-20,-7,-18.5,-5.5]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
+
+  // --- RIGHT EARRING ---
+  const egG2 = ctx.createRadialGradient(23, -10, 0.5, 23, -10, 3.2);
+  egG2.addColorStop(0, '#fff9c4'); egG2.addColorStop(0.4, '#ffe066'); egG2.addColorStop(1, '#d4a800');
+  ctx.fillStyle = egG2;
+  ctx.beginPath(); ctx.arc(23, -10, 3.2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  ctx.beginPath(); ctx.arc(23, -10, 1.7, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#ffe066'; ctx.lineWidth = 1;
+  [[23,-14,23,-16],[23,-6,23,-4],[26.5,-10,28,-10],[19.5,-10,18,-10]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
+
+  // --- eyes (almond shaped, realistic) ---
+  // whites
+  ctx.fillStyle = '#f5ede0';
+  ctx.beginPath(); ctx.ellipse(-8, -18, 5.5, 4, -0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8, -18, 5.5, 4, 0.1, 0, Math.PI * 2); ctx.fill();
+  // iris dark brown
+  const irisG = ctx.createRadialGradient(-8, -18, 0, -8, -18, 3.5);
+  irisG.addColorStop(0, '#3d1800'); irisG.addColorStop(1, '#1a0800');
+  ctx.fillStyle = irisG;
+  ctx.beginPath(); ctx.arc(-8, -18, 3.5, 0, Math.PI * 2); ctx.fill();
+  const irisG2 = ctx.createRadialGradient(8, -18, 0, 8, -18, 3.5);
+  irisG2.addColorStop(0, '#3d1800'); irisG2.addColorStop(1, '#1a0800');
+  ctx.fillStyle = irisG2;
+  ctx.beginPath(); ctx.arc(8, -18, 3.5, 0, Math.PI * 2); ctx.fill();
+  // pupil
+  ctx.fillStyle = '#050200';
+  ctx.beginPath(); ctx.arc(-8, -18, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(8, -18, 2, 0, Math.PI * 2); ctx.fill();
+  // catchlight
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath(); ctx.arc(-9.2, -19.2, 1.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(6.8, -19.2, 1.2, 0, Math.PI * 2); ctx.fill();
+  // eyelid crease
+  ctx.strokeStyle = 'rgba(80,40,10,0.4)'; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(-13, -20); ctx.quadraticCurveTo(-8, -22.5, -3, -20); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(3, -20); ctx.quadraticCurveTo(8, -22.5, 13, -20); ctx.stroke();
+
+  // --- eyebrows (thick, arched) ---
+  ctx.strokeStyle = '#0d0500'; ctx.lineWidth = 2.8; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-14, -24); ctx.quadraticCurveTo(-8, -27, -2, -24.5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(2, -24.5); ctx.quadraticCurveTo(8, -27, 14, -24); ctx.stroke();
+
+  // --- nose ---
+  ctx.strokeStyle = 'rgba(100,55,20,0.35)'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-2, -12); ctx.quadraticCurveTo(-5, -6, -4, -3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(2, -12); ctx.quadraticCurveTo(5, -6, 4, -3); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-5, -3, 2, Math.PI, 0); ctx.stroke();
+  ctx.beginPath(); ctx.arc(5, -3, 2, Math.PI, 0); ctx.stroke();
+
+  // --- lips / mouth ---
+  ctx.strokeStyle = '#7a4020'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-7, 2); ctx.quadraticCurveTo(0, 6, 7, 2); ctx.stroke();
+  // upper lip subtle
+  ctx.strokeStyle = 'rgba(100,50,20,0.5)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(-5, 2); ctx.quadraticCurveTo(0, -0.5, 5, 2); ctx.stroke();
+
+  // --- fine mustache ---
+  ctx.strokeStyle = 'rgba(15,5,0,0.85)'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-7, -1); ctx.quadraticCurveTo(0, -3.5, 7, -1); ctx.stroke();
+
+  // --- goatee ---
+  ctx.fillStyle = 'rgba(15,5,0,0.65)';
+  ctx.beginPath(); ctx.ellipse(0, 7, 5, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(15,5,0,0.45)';
+  ctx.beginPath(); ctx.ellipse(0, 9.5, 3.5, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+
+  // --- very short hair (just slight wisps below beanie) ---
+  ctx.fillStyle = '#0d0d0d';
+  ctx.beginPath(); ctx.arc(-16, -24, 3.5, 0.5, Math.PI); ctx.fill();
+  ctx.beginPath(); ctx.arc(16, -24, 3.5, 0, Math.PI - 0.5); ctx.fill();
+  // tiny wisps
+  ctx.strokeStyle = '#111'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-18, -22); ctx.lineTo(-19, -16); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(18, -22); ctx.lineTo(19, -16); ctx.stroke();
+
+  // --- beanie (textured) ---
+  const bnG = ctx.createLinearGradient(0, -50, 0, -28);
+  bnG.addColorStop(0, '#1a1a1a'); bnG.addColorStop(1, '#0a0a0a');
+  ctx.fillStyle = bnG;
+  ctx.beginPath(); ctx.roundRect(-18, -50, 36, 24, [10, 10, 4, 4]); ctx.fill();
+  // rib texture lines
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 1.2;
+  for (let i = 0; i < 7; i++) {
+    ctx.beginPath(); ctx.moveTo(-15 + i * 5, -49); ctx.lineTo(-15 + i * 5, -30); ctx.stroke();
+  }
+  // brim fold
+  ctx.fillStyle = '#080808';
+  ctx.beginPath(); ctx.roundRect(-19, -32, 38, 8, [2, 2, 4, 4]); ctx.fill();
+  // BKR tag
+  ctx.fillStyle = '#ff6eb4'; ctx.font = 'bold 6px Arial'; ctx.textAlign = 'center';
+  ctx.fillText('BKR', 0, -38);
+
+  ctx.restore();
+}
+
+/* ---------- PLATFORM DRAW ---------- */
+function drawPlat(p) {
+  const R = 12;
+  const grad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + 14);
+
+  if (p.b) {
+    grad.addColorStop(0, '#7f77dd'); grad.addColorStop(1, '#2a1a3a');
+  } else if (p.mv) {
+    grad.addColorStop(0, '#ffb347'); grad.addColorStop(1, '#1e1a10');
+  } else {
+    grad.addColorStop(0, '#ff6eb4'); grad.addColorStop(1, '#252525');
+  }
+
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.roundRect(p.x + 2, p.y + 4, p.w, 14, R); ctx.fill();
+
+  // body
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 14, R); ctx.fill();
+
+  // shine top
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath(); ctx.roundRect(p.x + 6, p.y + 2, p.w - 12, 4, 2); ctx.fill();
+
+  // glow under bounce
+  if (p.b) {
+    ctx.fillStyle = 'rgba(127,119,221,0.18)';
+    ctx.beginPath(); ctx.ellipse(p.x + p.w / 2, p.y + 10, p.w / 2 - 2, 6, 0, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+/* ---------- BACKGROUND ---------- */
+function drawBG() {
+  // Sky
+  const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.6);
+  skyG.addColorStop(0, '#050510'); skyG.addColorStop(1, '#0d0d1e');
+  ctx.fillStyle = skyG; ctx.fillRect(0, 0, W, H);
+
+  // Stars twinkle
+  [[30,22],[95,50],[170,12],[270,40],[340,68],[60,85],[200,32],[310,18],[150,70],[250,88],[360,42],[180,55],[80,105],[320,95]].forEach(([sx, sy]) => {
+    const b = .3 + .28 * Math.sin(G.af * .04 + sx * .09);
+    ctx.fillStyle = `rgba(255,255,255,${b.toFixed(2)})`;
+    ctx.beginPath(); ctx.arc(sx % W, sy % (H * .55 | 0), b > .48 ? 1.5 : 1, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Moon
+  ctx.fillStyle = 'rgba(245,230,176,0.9)';
+  ctx.beginPath(); ctx.arc(W - 55, 52, 24, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#050510';
+  ctx.beginPath(); ctx.arc(W - 44, 44, 18, 0, Math.PI * 2); ctx.fill();
+
+  // Buildings parallax
+  const bsc = G.cam * .06;
+  [
+    { x: 0,     w: 68,  h: 165, c: '#111120' },
+    { x: 66,    w: 54,  h: 128, c: '#141422' },
+    { x: 118,   w: 90,  h: 182, c: '#0e0e18' },
+    { x: W-145, w: 78,  h: 168, c: '#0c0c16' },
+    { x: W-69,  w: 69,  h: 150, c: '#101020' },
+  ].forEach((b, i) => {
+    const top = H - b.h + (bsc % (40 + i * 8));
+    ctx.fillStyle = b.c; ctx.fillRect(b.x, top, b.w, b.h + 10);
+    // windows
+    const cols = Math.floor(b.w / 14), rows = Math.floor(b.h / 16);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if ((b.x + r * 7 + c * 11) % 5 < 2) {
+        const lit = (G.af % 400 > 380) ? Math.random() > .5 : (b.x + r + c) % 3 === 0;
+        ctx.fillStyle = lit ? 'rgba(255,221,136,0.3)' : 'rgba(68,136,255,0.15)';
+        ctx.fillRect(b.x + 3 + c * 14, top + 5 + r * 16, 9, 9);
+      }
+    }
+    // roof pink glow
+    ctx.fillStyle = 'rgba(255,110,180,0.14)'; ctx.fillRect(b.x, top - 2, b.w, 3);
+  });
+
+  // Wall / sidewalk
+  const wy = H - 70;
+  const wallG = ctx.createLinearGradient(0, wy, 0, wy + 42);
+  wallG.addColorStop(0, '#1e1e28'); wallG.addColorStop(1, '#181820');
+  ctx.fillStyle = wallG; ctx.fillRect(0, wy, W, 42);
+  // brick lines
+  ctx.strokeStyle = 'rgba(28,28,40,0.9)'; ctx.lineWidth = .5;
+  for (let r = 0; r < 2; r++) for (let c = 0; c < Math.ceil(W / 36); c++) {
+    ctx.strokeRect(c * 36 + (r % 2 * 18), wy + r * 19, 34, 16);
+  }
+  // ground
+  const grdG = ctx.createLinearGradient(0, H - 30, 0, H);
+  grdG.addColorStop(0, '#1a1a1a'); grdG.addColorStop(1, '#111');
+  ctx.fillStyle = grdG; ctx.fillRect(0, H - 30, W, 30);
+  // pink line
+  ctx.fillStyle = '#ff6eb4'; ctx.fillRect(0, H - 30, W, 2);
+  // road marks
+  for (let i = 0; i < 4; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fillRect(40 + i * (W / 4), H - 18, 50, 4);
+  }
+}
+
+/* ---------- PARTICLES ---------- */
+function spawnPt(x, y, b) {
+  const col = b ? '#7f77dd' : '#ff6eb4';
+  for (let i = 0; i < (b ? 10 : 6); i++) {
+    const a = Math.random() * Math.PI * 2, s = b ? 2 + Math.random() * 3 : 1 + Math.random() * 2;
+    G.pts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, life: 1, col, r: b ? 3.5 : 2 });
+  }
+}
+function spawnLvPt() {
+  for (let i = 0; i < 35; i++) {
+    const a = Math.random() * Math.PI * 2, s = 2 + Math.random() * 5;
+    G.pts.push({ x: W / 2, y: H / 2, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, col: Math.random() < .5 ? '#ff6eb4' : '#fff', r: 2 + Math.random() * 4 });
+  }
+}
+
+/* ---------- GAME FLOW ---------- */
+function showTitle() {
+  clearPrev(); stopBG();
+  ['s-unlock', 's-win', 's-go', 'hud'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList ? el.classList.remove('on') : (el.style.display = 'none');
+  });
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('s-title').classList.add('on');
+  if (G.loop) { cancelAnimationFrame(G.loop); G.loop = null; }
+  G.run = false;
+}
+
+function startGame() {
+  getAC(); resize();
+  G = { ...G, run: false, lvl: 1, score: 0, unl: 0, af: 0, pts: [], touchX: null, loop: null, vx: 0, vy: 0, px: 0, py: 0, cam: 0, plats: [] };
+  ['s-title', 's-unlock', 's-win', 's-go'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('lvo').classList.remove('show');
+  doLevel(1);
+}
+
+function doLevel(lvl) {
+  G.lvl = lvl; genPlats(lvl);
+  G.px = W / 2; G.py = H - 80; G.vx = 0; G.vy = 0; G.cam = 0; G.pts = []; G.touchX = null;
+  document.getElementById('hud').style.display = 'flex';
+  canvas.style.display = 'block';
+  ['s-title', 's-unlock', 's-win', 's-go'].forEach(id => document.getElementById(id).classList.remove('on'));
+  updateHUD(); clearPrev(); startBG(); G.run = true;
+  if (G.loop) cancelAnimationFrame(G.loop);
+  gloop();
+}
+
+function retryLevel() { document.getElementById('s-go').classList.remove('on'); doLevel(G.lvl); }
+
+/* ---------- GAME LOOP ---------- */
+const GR = 0.44, JV = -14.8, JVB = -20, MS = 6.5, MF = 16, WALL_DAMP = 0.6;
+
+function gloop() {
+  if (!G.run) return;
+  G.loop = requestAnimationFrame(gloop); G.af++;
+
+  // --- Touch / tilt control: finger position relative to player ---
+  if (G.touchX !== null) {
+    const diff = G.touchX - G.px;
+    const force = Math.sign(diff) * Math.min(Math.abs(diff) / 40, 1) * 2.2;
+    G.vx += force;
+  } else {
+    G.vx *= 0.78; // friction when no touch
+  }
+  G.vx = Math.max(-MS, Math.min(MS, G.vx));
+
+  G.vy = Math.min(G.vy + GR, MF);
+  G.px += G.vx; G.py += G.vy;
+
+  // --- WALL BOUNCE (instead of wrap) ---
+  if (G.px < 14) { G.px = 14; G.vx = Math.abs(G.vx) * WALL_DAMP; }
+  if (G.px > W - 14) { G.px = W - 14; G.vx = -Math.abs(G.vx) * WALL_DAMP; }
+
+  // --- Platform collision ---
+  G.plats.forEach(p => { if (p.mv) { p.x += p.dir * p.spd; if (p.x < 4 || p.x + p.w > W - 4) p.dir *= -1; } });
+  if (G.vy > 0) {
+    const wf = G.py + 2 + G.cam;
+    G.plats.forEach(p => {
+      if (G.px + 12 > p.x && G.px - 12 < p.x + p.w) {
+        const pf = wf - G.vy;
+        if (pf <= p.y + 2 && wf >= p.y) {
+          G.py = p.y - G.cam - 2; G.vy = p.b ? JVB : JV;
+          sfxJump(p.b); spawnPt(G.px, G.py + G.cam, p.b);
+        }
+      }
+    });
+  }
+
+  // --- Camera scroll ---
+  const sy = G.py;
+  if (sy < H * .42) {
+    const diff = H * .42 - sy; G.cam -= diff; G.py += diff;
+    G.score += Math.round(Math.abs(diff) / 2); updateHUD();
+  }
+
+  // --- Fall = game over ---
+  if (G.py > H + 60) {
+    G.run = false; cancelAnimationFrame(G.loop); stopBG(); sfxFall();
+    setTimeout(showGO, 350); return;
+  }
+
+  // --- Level complete ---
+  if (G.score >= ldiff(G.lvl).tgt) {
+    G.run = false; cancelAnimationFrame(G.loop); stopBG(); spawnLvPt(); sfxLvl();
+    document.getElementById('lvtxt').textContent = 'NIVEAU ' + (G.lvl + 1);
+    document.getElementById('lvsub').textContent = TRACKS[G.lvl - 1] + ' - DEBLOQUE !';
+    const ring = document.getElementById('lvring');
+    ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = 'ringout .85s ease-out forwards';
+    const lvo = document.getElementById('lvo'); lvo.classList.add('show');
+    setTimeout(() => { lvo.classList.remove('show'); showUnlock(G.lvl - 1); }, 1900);
+    return;
+  }
+
+  // --- Particles ---
+  G.pts = G.pts.filter(p => { p.x += p.vx; p.y += p.vy; p.vy += .12; p.life -= .03; return p.life > 0; });
+
+  // --- RENDER ---
+  ctx.clearRect(0, 0, W, H);
+  drawBG();
+  G.plats.forEach(p => { const sy2 = p.y - G.cam; if (sy2 > -20 && sy2 < H + 20) drawPlat({ ...p, y: sy2 }); });
+  G.pts.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1;
+  drawPlayer(G.px, G.py, G.vx, G.vy < -2);
+
+  // Progress bar (right side)
+  const prevT = G.lvl > 1 ? ldiff(G.lvl - 1).tgt : 0, curT = ldiff(G.lvl).tgt;
+  const prog = Math.min(1, Math.max(0, (G.score - prevT) / (curT - prevT)));
+  const barH = Math.round((H - HUD_H - 44) * prog);
+  const barY = HUD_H + 4;
+  ctx.fillStyle = '#111'; ctx.fillRect(W - 13, barY, 9, H - HUD_H - 42);
+  ctx.fillStyle = '#ff6eb4'; ctx.fillRect(W - 13, H - HUD_H - 42 - barH + barY - HUD_H, 9, barH);
+  ctx.fillStyle = 'rgba(255,110,180,.4)'; ctx.fillRect(W - 13, H - HUD_H - 47 - barH + barY - HUD_H, 9, 6);
+}
+
+/* ---------- HUD / SCREENS ---------- */
+function updateHUD() {
+  document.getElementById('h-score').textContent = G.score;
+  document.getElementById('h-level').textContent = 'NIVEAU ' + G.lvl;
+  document.getElementById('h-track').textContent = TRACKS[Math.min(G.lvl - 1, 13)];
+  document.getElementById('h-unl').textContent = G.unl + '/14';
+}
+function showGO() {
+  document.getElementById('go-lvl').textContent = G.lvl;
+  document.getElementById('go-sc').textContent = G.score;
+  document.getElementById('s-go').classList.add('on');
+}
+function showUnlock(idx) {
+  document.getElementById('u-num').textContent = 'MORCEAU ' + (idx + 1) + ' / 14';
+  document.getElementById('u-name').textContent = TRACKS[idx];
+  ['wv', 'wv2'].forEach(id => {
+    const w = document.getElementById(id); w.innerHTML = '';
+    for (let i = 0; i < 8; i++) {
+      const b = document.createElement('div'); b.className = 'wb';
+      b.style.animationDelay = (i * .1) + 's'; b.style.height = Math.round(4 + Math.random() * 13) + 'px'; w.appendChild(b);
+    }
+  });
+  loadTrack(idx);
+  document.getElementById('btn-cont').textContent = idx >= 13 ? 'ALBUM COMPLET' : 'NIVEAU ' + (idx + 2) + ' ->';
+  document.getElementById('u-hint').textContent = idx >= 13 ? 'Tu as tout debloque !' : 'Plus que ' + (14 - idx - 1) + ' morceaux !';
+  document.getElementById('s-unlock').classList.add('on');
+}
+function continueGame() {
+  G.unl++; clearPrev(); document.getElementById('s-unlock').classList.remove('on');
+  if (G.unl >= 14) { showWin(); return; }
+  doLevel(G.lvl + 1);
+}
+function showWin() {
+  document.getElementById('hud').style.display = 'none'; stopBG();
+  const tg = document.getElementById('win-tracks'); tg.innerHTML = '';
+  TRACKS.forEach(t => { const p = document.createElement('div'); p.className = 'ttag'; p.textContent = t; tg.appendChild(p); });
+  document.getElementById('s-win').classList.add('on');
+}
+
+/* ---------- INPUT ---------- */
+// Keyboard (desktop)
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { G.touchX = G.px - 80; e.preventDefault(); }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { G.touchX = G.px + 80; e.preventDefault(); }
+});
+document.addEventListener('keyup', e => {
+  if (['ArrowLeft','ArrowRight','a','A','d','D'].includes(e.key)) G.touchX = null;
+});
+
+// Touch — finger position drives player
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  getAC();
+  G.touchX = e.touches[0].clientX;
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  G.touchX = e.touches[0].clientX;
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  G.touchX = null;
+}, { passive: false });
+
+// Init audio on first interaction
+document.addEventListener('click', () => getAC(), { once: true });
+document.addEventListener('touchstart', () => getAC(), { once: true, passive: true });
+
+// Safari full-screen scroll prevention
+document.addEventListener('touchmove', e => { if (e.target === document.body) e.preventDefault(); }, { passive: false });
+
+window.addEventListener('resize', () => { resize(); });
+resize();
+</script>
+</body>
+</html>
