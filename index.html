@@ -1351,16 +1351,26 @@ function openLB() {
 
 function closeLB() {
   document.getElementById('s-lb').classList.remove('on');
-  pendingScore = null;
+  // NOTE: do NOT null pendingScore here — user may submit after closing
 
   // Return to the screen we came from
   const returnEl = document.getElementById(lbReturnTo);
   if (returnEl) returnEl.classList.add('on');
 
-  // Restore HUD if came from game over
+  // Restore HUD + canvas if came from game over
   if (lbReturnTo === 's-go') {
     document.getElementById('hud').style.display = 'flex';
+    canvas.style.display = 'block';
     updateHUD();
+    // Redraw last frame so character is visible
+    ctx.clearRect(0, 0, W, H);
+    drawBG();
+    G.plats.forEach(p => { const sy2 = p.y - G.cam; if (sy2 > -20 && sy2 < H + 20) drawPlat({...p, y: sy2}); });
+    drawPlayer(G.px, G.py, G.vx, false);
+  } else if (lbReturnTo === 's-win') {
+    document.getElementById('hud').style.display = 'none';
+  } else {
+    document.getElementById('hud').style.display = 'none';
   }
 }
 
@@ -1377,6 +1387,16 @@ async function submitScore() {
   document.getElementById('lb-status').textContent = 'Envoi en cours...';
   await fetchScores();
   const newEntry = { name, score: pendingScore.score, level: pendingScore.level, date: new Date().toISOString().slice(0,10) };
+  // Remove old entry from same player, keep best score
+  const existingIdx = lbScores.findIndex(s => s.name.toLowerCase() === name.toLowerCase());
+  if (existingIdx >= 0) {
+    if (pendingScore.score > lbScores[existingIdx].score) {
+      lbScores.splice(existingIdx, 1); // remove old, add new best
+    } else {
+      document.getElementById('lb-status').textContent = 'Ton ancien score est meilleur !';
+      return;
+    }
+  }
   lbScores.push(newEntry);
   lbScores.sort((a,b) => b.score - a.score);
   lbScores = lbScores.slice(0,10);
