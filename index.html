@@ -90,8 +90,8 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 .uname{font-size:18px;font-weight:900;color:#fff;font-style:italic;
   letter-spacing:1px;margin:4px 0 6px;max-width:180px}
 .wv{display:flex;gap:3px;align-items:flex-end;height:20px;justify-content:center}
-.wb{width:4px;background:#ff6eb4;border-radius:1px;
-  animation:wav .7s ease-in-out infinite alternate}
+.wb{width:4px;background:#ff6eb4;border-radius:1px;animation:wav .7s ease-in-out infinite alternate;animation-play-state:paused}
+.wv.playing .wb{animation-play-state:running}
 @keyframes wav{from{height:3px}to{height:16px}}
 .aplayer{
   width:100%;max-width:340px;background:#111;
@@ -343,13 +343,31 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <!-- UNLOCK -->
 <div id="s-unlock" class="screen">
   <div class="ubadge">Morceau debloque !</div>
-  <div class="wv" id="wv"></div>
+  <div class="wv" id="wv">
+    <div class="wb" style="animation-delay:0s;height:6px"></div>
+    <div class="wb" style="animation-delay:.08s;height:10px"></div>
+    <div class="wb" style="animation-delay:.16s;height:14px"></div>
+    <div class="wb" style="animation-delay:.24s;height:8px"></div>
+    <div class="wb" style="animation-delay:.32s;height:12px"></div>
+    <div class="wb" style="animation-delay:.40s;height:16px"></div>
+    <div class="wb" style="animation-delay:.48s;height:10px"></div>
+    <div class="wb" style="animation-delay:.56s;height:7px"></div>
+  </div>
   <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">
     <div class="ucov"><img src="cover.jpg" id="ucov-img" alt="cover"></div>
     <div style="text-align:left">
       <div class="unum" id="u-num"></div>
       <div class="uname" id="u-name"></div>
-      <div class="wv" id="wv2"></div>
+      <div class="wv" id="wv2">
+    <div class="wb" style="animation-delay:.05s;height:8px"></div>
+    <div class="wb" style="animation-delay:.13s;height:14px"></div>
+    <div class="wb" style="animation-delay:.21s;height:10px"></div>
+    <div class="wb" style="animation-delay:.29s;height:16px"></div>
+    <div class="wb" style="animation-delay:.37s;height:6px"></div>
+    <div class="wb" style="animation-delay:.45s;height:12px"></div>
+    <div class="wb" style="animation-delay:.53s;height:9px"></div>
+    <div class="wb" style="animation-delay:.61s;height:13px"></div>
+  </div>
     </div>
   </div>
   <div class="aplayer">
@@ -400,10 +418,10 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
     <div class="bonus-title" id="bonus-track-name">TITRE BONUS</div>
     <div class="bonus-sub">Morceau inédit · Réservé aux vrais fans</div>
     <div class="wv" id="wv-bonus2" style="justify-content:center;margin:8px 0"></div>
-    <a id="bonus-dl-btn" href="#" download class="btn-download">
+    <button id="bonus-dl-btn" onclick="downloadBonus()" class="btn-download">
       <span class="dl-icon">⬇</span>
       <span>TÉLÉCHARGER L'EXCLU</span>
-    </a>
+    </button>
   </div>
   <div style="font-size:9px;color:#555;letter-spacing:2px;margin-top:4px">Merci d'avoir joué · BABYBOY MUSIK · 22 Mai</div>
   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
@@ -521,7 +539,7 @@ function loadTrack(idx) {
     setStatus('');
     const p = UA.play();
     if (p !== undefined) {
-      p.then(() => { setBtn('&#9646;&#9646;'); startCD(); })
+      p.then(() => { setBtn('&#9646;&#9646;'); makeWaves('wv'); makeWaves('wv2'); startCD(); })
        .catch(() => { setStatus('Appuie sur ▶ pour ecouter'); setBtn('&#9654;'); });
     } else {
       setBtn('&#9646;&#9646;'); startCD();
@@ -552,6 +570,7 @@ function startCD() {
     if (prevElapsed >= PREVIEW_DURATION) {
       UA.pause(); document.getElementById('ap-btn').innerHTML = '&#9654;';
       document.getElementById('ap-status').textContent = 'Extrait termine - Album le 22 Mai !';
+      stopWaves('wv'); stopWaves('wv2');
       clearInterval(cdInt);
     }
   }, 100);
@@ -1201,15 +1220,13 @@ function showGO() {
   setTimeout(() => autoSubmitScore(), 500);
 }
 function makeWaves(id) {
-  const w = document.getElementById(id); if(!w) return;
-  w.innerHTML = '';
-  for (let i = 0; i < 8; i++) {
-    const b = document.createElement('div'); b.className = 'wb';
-    b.style.animationDelay = (i * .08) + 's';
-    b.style.height = Math.round(6 + Math.random() * 12) + 'px';
-    b.style.animationPlayState = 'running';
-    w.appendChild(b);
-  }
+  // Bars are pre-built in HTML — just start the animation
+  const w = document.getElementById(id);
+  if (w) w.classList.add('playing');
+}
+function stopWaves(id) {
+  const w = document.getElementById(id);
+  if (w) w.classList.remove('playing');
 }
 
 function showUnlock(idx) {
@@ -1229,6 +1246,15 @@ function showUnlock(idx) {
   document.getElementById('s-unlock').classList.add('on');
 }
 
+function downloadBonus() {
+  if (!BONUS_TRACK.available) {
+    alert('Le morceau bonus arrive bientot ! 🎁');
+    return;
+  }
+  // Open in new tab — works on iOS without blocking navigation
+  window.open(BONUS_TRACK.file, '_blank');
+}
+
 function showBonusScreen() {
   ['s-unlock','s-win','s-go','s-title'].forEach(id => document.getElementById(id).classList.remove('on'));
   // Setup bonus track
@@ -1236,15 +1262,8 @@ function showBonusScreen() {
   makeWaves('wv-bonus'); makeWaves('wv-bonus2');
 
   const dlBtn = document.getElementById('bonus-dl-btn');
-  if (BONUS_TRACK.available) {
-    dlBtn.href = BONUS_TRACK.file;
-    dlBtn.download = BONUS_TRACK.name + '.mp3';
-    dlBtn.style.opacity = '1';
-    dlBtn.style.pointerEvents = 'auto';
-  } else {
-    dlBtn.href = '#';
-    dlBtn.onclick = (e) => { e.preventDefault(); alert('Le morceau bonus arrive bientot ! 🎁'); };
-    dlBtn.style.opacity = '0.7';
+  if (dlBtn) {
+    dlBtn.style.opacity = BONUS_TRACK.available ? '1' : '0.7';
   }
   document.getElementById('s-bonus').classList.add('on');
 }
