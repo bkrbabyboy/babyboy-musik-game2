@@ -9,20 +9,14 @@
 <title>BABYBOY MUSIK</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{height:100%;background:#0a0a0a}
+html,body{height:100%;background:#0a0a0a;margin:0;padding:0;overflow:hidden;width:100%;}
 body{
   height:100%;background:#0a0a0a;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-  /* Safari full-screen trick */
-  min-height:100vh;
-  min-height:-webkit-fill-available;
-}
+
 #root{
   background:#0a0a0a;color:#fff;font-family:Arial,sans-serif;
   user-select:none;overflow:hidden;position:relative;
-  width:100%;max-width:430px;
-  /* fill entire viewport including notch areas */
+  width:100%;
   height:100vh;
   height:-webkit-fill-available;
   touch-action:none;
@@ -296,6 +290,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <div style="font-size:12px;color:#aaa;letter-spacing:2px">Tombe au niveau</div>
   <div style="font-size:34px;font-weight:900;color:#fff" id="go-lvl">1</div>
   <div style="font-size:12px;color:#666">Score : <span id="go-sc" style="color:#fff;font-weight:900">0</span></div>
+  <div id="go-auto-status" style="font-size:9px;color:#ff6eb4;letter-spacing:2px;min-height:14px;margin-top:-4px"></div>
   <button class="btn-main" onclick="retryLevel()" style="margin-top:10px">RECOMMENCER</button>
   <button class="btn-sec" onclick="openLB()" style="margin-top:6px">🏆 SCORES</button>
   <button class="btn-sec" onclick="showTitle()" style="margin-top:6px">MENU</button>
@@ -590,12 +585,16 @@ function resize() {
   const root = document.getElementById('root');
   W = root.offsetWidth;
   H = root.offsetHeight;
-  // Match canvas pixels exactly to CSS pixels — no DPR scaling that would break coordinates
-  canvas.width = W;
-  canvas.height = H;
-  canvas.style.width = W + 'px';
+  // Use devicePixelRatio for crisp rendering on retina/high-DPI mobile screens
+  const DPR = Math.min(window.devicePixelRatio || 1, 3);
+  // Set canvas INTERNAL size to physical pixels (sharp)
+  canvas.width  = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  // CSS size stays at logical pixels
+  canvas.style.width  = W + 'px';
   canvas.style.height = H + 'px';
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset any previous transform
+  // Scale ALL drawing by DPR so game coordinates stay in logical pixels
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 
 /* ---------- PLATFORM GEN ---------- */
@@ -1103,6 +1102,7 @@ function gloop() {
   G.pts = G.pts.filter(p => { p.x += p.vx * DT; p.y += p.vy * DT; p.vy += .12 * DT; p.life -= .03 * DT; return p.life > 0; });
 
   // --- RENDER ---
+  const _DPR=Math.min(window.devicePixelRatio||1,3);ctx.setTransform(_DPR,0,0,_DPR,0,0);
   ctx.clearRect(0, 0, W, H);
   drawBG();
   updateTrail();
@@ -1133,6 +1133,8 @@ function showGO() {
   document.getElementById('go-sc').textContent = G.score;
   pendingScore = { score: G.score, level: G.lvl };
   document.getElementById('s-go').classList.add('on');
+  // Auto-submit if pseudo already known
+  setTimeout(() => autoSubmitScore(), 500);
 }
 function makeWaves(id) {
   const w = document.getElementById(id); if(!w) return; w.innerHTML = '';
@@ -1323,6 +1325,10 @@ function renderLB() {
 let lbReturnTo = 's-go'; // track where to return after closing LB
 
 function openLB() {
+  // Auto-fill saved pseudo
+  const savedName = getSavedName();
+  const nameEl = document.getElementById('lb-name-input');
+  if (nameEl && savedName) nameEl.value = savedName;
   // Remember where we came from
   if (document.getElementById('s-go').classList.contains('on')) lbReturnTo = 's-go';
   else if (document.getElementById('s-win').classList.contains('on')) lbReturnTo = 's-win';
@@ -1363,6 +1369,8 @@ function closeLB() {
     canvas.style.display = 'block';
     updateHUD();
     // Redraw last frame so character is visible
+    const _DPR2 = Math.min(window.devicePixelRatio || 1, 3);
+    ctx.setTransform(_DPR2, 0, 0, _DPR2, 0, 0);
     ctx.clearRect(0, 0, W, H);
     drawBG();
     G.plats.forEach(p => { const sy2 = p.y - G.cam; if (sy2 > -20 && sy2 < H + 20) drawPlat({...p, y: sy2}); });
@@ -1374,15 +1382,39 @@ function closeLB() {
   }
 }
 
-async function submitScore() {
+// Auto-save/restore pseudo from localStorage
+function getSavedName() {
+  try { return localStorage.getItem('bkr_pseudo') || ''; } catch(e) { return ''; }
+}
+function saveName(n) {
+  try { localStorage.setItem('bkr_pseudo', n); } catch(e) {}
+}
+
+// Auto-submit score when game ends if pseudo already saved
+async function autoSubmitScore() {
+  const name = getSavedName();
+  if (!name || !pendingScore) return;
+  if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') return;
+  // Pre-fill input
   const nameEl = document.getElementById('lb-name-input');
-  const name = (nameEl.value || '').trim();
-  if (!name) { document.getElementById('lb-status').textContent = 'Entre un pseudo !'; return; }
-  if (!pendingScore) { document.getElementById('lb-status').textContent = 'Joue une partie pour soumettre un score !'; return; }
+  if (nameEl) nameEl.value = name;
+  const statusEl = document.getElementById('go-auto-status');
+  if (statusEl) statusEl.textContent = 'Envoi du score...';
+  await submitScore(true);
+  if (statusEl) statusEl.textContent = pendingScore === null ? '✓ Score envoyé !' : '';
+}
+
+async function submitScore(silent = false) {
+  const nameEl = document.getElementById('lb-name-input');
+  const name = (nameEl ? nameEl.value || '' : getSavedName()).trim();
+  if (!name) { if(!silent) document.getElementById('lb-status').textContent = 'Entre un pseudo !'; return; }
+  if (!pendingScore) { if(!silent) document.getElementById('lb-status').textContent = 'Joue une partie pour soumettre un score !'; return; }
   if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') {
-    document.getElementById('lb-status').textContent = 'Configure JSONBin dans le code pour activer les scores en ligne !';
+    if(!silent) document.getElementById('lb-status').textContent = 'Configure JSONBin dans le code pour activer les scores en ligne !';
     return;
   }
+  // Save pseudo for next time
+  saveName(name);
 
   document.getElementById('lb-status').textContent = 'Envoi en cours...';
   await fetchScores();
