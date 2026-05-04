@@ -865,40 +865,34 @@ function drawPlat(p) {
 
 /* ---------- BACKGROUND ---------- */
 function drawBG() {
-  // ---- FL STUDIO PIANO ROLL BACKGROUND ----
-  // Dark DAW background
+  // ---- FL STUDIO PIANO ROLL BACKGROUND (clean, no dead code) ----
   ctx.fillStyle = '#1a1d21';
   ctx.fillRect(0, 0, W, H);
 
-  // Horizontal row bands (alternating dark / slightly lighter for white/black keys)
-  // Simulate piano roll rows — 12 semitones repeating
+  // Horizontal semitone rows
   const rowH = 22;
   const totalRows = Math.ceil(H / rowH) + 2;
   const offsetY = (G.cam * 0.15) % rowH;
-
   for (let r = 0; r < totalRows; r++) {
     const y = r * rowH - offsetY;
-    // black key rows: 1,3,6,8,10 in 0-11 pattern
     const semitone = r % 12;
     const isBlack = [1,3,6,8,10].includes(semitone);
     ctx.fillStyle = isBlack ? '#161820' : '#1e2128';
     ctx.fillRect(0, y, W, rowH);
-    // very subtle horizontal separator
     ctx.fillStyle = 'rgba(255,255,255,0.025)';
     ctx.fillRect(0, y + rowH - 1, W, 1);
   }
 
-  // Vertical beat/bar lines
-  const barW = Math.round(W / 4); // 4 bars visible
+  // Vertical beat lines
+  const barW = Math.round(W / 4);
   for (let b = 0; b <= 8; b++) {
-    const x = (b * barW / 2) - ((G.cam * 0) % (barW / 2));
-    const isBeat = b % 2 === 0;
-    ctx.strokeStyle = isBeat ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = isBeat ? 1 : 0.5;
+    const x = b * barW / 2;
+    ctx.strokeStyle = b % 2 === 0 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = b % 2 === 0 ? 1 : 0.5;
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
   }
 
-  // Beat numbers at top (below HUD)
+  // Beat numbers
   ctx.fillStyle = 'rgba(255,255,255,0.2)';
   ctx.font = 'bold 9px Arial';
   ctx.textAlign = 'left';
@@ -906,7 +900,7 @@ function drawBG() {
     ctx.fillText(b, b * barW - barW + 4, HUD_H + 14);
   }
 
-  // Playhead line (subtle, moving with score)
+  // Playhead
   const phX = ((G.score / 60) % W);
   ctx.strokeStyle = 'rgba(255,110,180,0.35)';
   ctx.lineWidth = 1.5;
@@ -914,7 +908,7 @@ function drawBG() {
   ctx.beginPath(); ctx.moveTo(phX, HUD_H); ctx.lineTo(phX, H); ctx.stroke();
   ctx.setLineDash([]);
 
-  // Piano keys strip on left edge
+  // Piano keys strip left
   const keyW = 22;
   ctx.fillStyle = '#111315';
   ctx.fillRect(0, HUD_H, keyW, H - HUD_H);
@@ -922,89 +916,20 @@ function drawBG() {
   ctx.lineWidth = 0.5;
   ctx.beginPath(); ctx.moveTo(keyW, HUD_H); ctx.lineTo(keyW, H); ctx.stroke();
 
-  // Draw piano keys
   const noteNames = ['C','B','Bb','A','Ab','G','Gb','F','E','Eb','D','Db'];
   for (let r = 0; r < totalRows; r++) {
     const y = r * rowH - offsetY;
-    if (y < HUD_H || y > H) continue;
+    if (y < HUD_H - rowH || y > H) continue;
     const semitone = r % 12;
     const isBlack = [1,3,6,8,10].includes(semitone);
-    const noteName = noteNames[semitone % 12];
-    // key body
     ctx.fillStyle = isBlack ? '#1a1a1a' : '#2a2c30';
     ctx.fillRect(1, y + 1, keyW - 3, rowH - 2);
-    // note name
     if (!isBlack) {
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.font = '7px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(noteName, keyW / 2, y + rowH - 5);
+      ctx.fillText(noteNames[semitone % 12], keyW / 2, y + rowH - 5);
     }
-  }
-
-  return; // skip old sky/buildings
-  // (dead code below kept for reference)
-  const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.6);
-  skyG.addColorStop(0, '#050510'); skyG.addColorStop(1, '#0d0d1e');
-  ctx.fillStyle = skyG; ctx.fillRect(0, 0, W, H);
-
-  // Stars twinkle
-  [[30,22],[95,50],[170,12],[270,40],[340,68],[60,85],[200,32],[310,18],[150,70],[250,88],[360,42],[180,55],[80,105],[320,95]].forEach(([sx, sy]) => {
-    const b = .3 + .28 * Math.sin(G.af * .04 + sx * .09);
-    ctx.fillStyle = `rgba(255,255,255,${b.toFixed(2)})`;
-    ctx.beginPath(); ctx.arc(sx % W, sy % (H * .55 | 0), b > .48 ? 1.5 : 1, 0, Math.PI * 2); ctx.fill();
-  });
-
-  // Moon
-  ctx.fillStyle = 'rgba(245,230,176,0.9)';
-  ctx.beginPath(); ctx.arc(W - 55, 52, 24, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#050510';
-  ctx.beginPath(); ctx.arc(W - 44, 44, 18, 0, Math.PI * 2); ctx.fill();
-
-  // Buildings parallax
-  const bsc = G.cam * .06;
-  [
-    { x: 0,     w: 68,  h: 165, c: '#111120' },
-    { x: 66,    w: 54,  h: 128, c: '#141422' },
-    { x: 118,   w: 90,  h: 182, c: '#0e0e18' },
-    { x: W-145, w: 78,  h: 168, c: '#0c0c16' },
-    { x: W-69,  w: 69,  h: 150, c: '#101020' },
-  ].forEach((b, i) => {
-    const top = H - b.h + (bsc % (40 + i * 8));
-    ctx.fillStyle = b.c; ctx.fillRect(b.x, top, b.w, b.h + 10);
-    // windows
-    const cols = Math.floor(b.w / 14), rows = Math.floor(b.h / 16);
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-      if ((b.x + r * 7 + c * 11) % 5 < 2) {
-        const lit = (G.af % 400 > 380) ? Math.random() > .5 : (b.x + r + c) % 3 === 0;
-        ctx.fillStyle = lit ? 'rgba(255,221,136,0.3)' : 'rgba(68,136,255,0.15)';
-        ctx.fillRect(b.x + 3 + c * 14, top + 5 + r * 16, 9, 9);
-      }
-    }
-    // roof pink glow
-    ctx.fillStyle = 'rgba(255,110,180,0.14)'; ctx.fillRect(b.x, top - 2, b.w, 3);
-  });
-
-  // Wall / sidewalk
-  const wy = H - 70;
-  const wallG = ctx.createLinearGradient(0, wy, 0, wy + 42);
-  wallG.addColorStop(0, '#1e1e28'); wallG.addColorStop(1, '#181820');
-  ctx.fillStyle = wallG; ctx.fillRect(0, wy, W, 42);
-  // brick lines
-  ctx.strokeStyle = 'rgba(28,28,40,0.9)'; ctx.lineWidth = .5;
-  for (let r = 0; r < 2; r++) for (let c = 0; c < Math.ceil(W / 36); c++) {
-    ctx.strokeRect(c * 36 + (r % 2 * 18), wy + r * 19, 34, 16);
-  }
-  // ground
-  const grdG = ctx.createLinearGradient(0, H - 30, 0, H);
-  grdG.addColorStop(0, '#1a1a1a'); grdG.addColorStop(1, '#111');
-  ctx.fillStyle = grdG; ctx.fillRect(0, H - 30, W, 30);
-  // pink line
-  ctx.fillStyle = '#ff6eb4'; ctx.fillRect(0, H - 30, W, 2);
-  // road marks
-  for (let i = 0; i < 4; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,0.04)';
-    ctx.fillRect(40 + i * (W / 4), H - 18, 50, 4);
   }
 }
 
