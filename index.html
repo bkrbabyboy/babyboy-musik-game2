@@ -90,16 +90,9 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 .uname{font-size:18px;font-weight:900;color:#fff;font-style:italic;
   letter-spacing:1px;margin:4px 0 6px;max-width:180px}
 .wv{display:flex;gap:3px;align-items:flex-end;height:20px;justify-content:center}
-.wb{width:4px;background:#ff6eb4;border-radius:1px;animation:wav .7s ease-in-out infinite alternate}
-@keyframes wav{0%{height:3px}50%{height:16px}100%{height:5px}}
-.wb:nth-child(1){animation-duration:.6s}
-.wb:nth-child(2){animation-duration:.8s}
-.wb:nth-child(3){animation-duration:.5s}
-.wb:nth-child(4){animation-duration:.9s}
-.wb:nth-child(5){animation-duration:.7s}
-.wb:nth-child(6){animation-duration:.55s}
-.wb:nth-child(7){animation-duration:.85s}
-.wb:nth-child(8){animation-duration:.65s}
+.wb{width:4px;background:#ff6eb4;border-radius:1px;animation:wav .7s ease-in-out infinite alternate;animation-play-state:paused}
+.wv.playing .wb{animation-play-state:running}
+@keyframes wav{from{height:3px}to{height:16px}}
 .aplayer{
   width:100%;max-width:340px;background:#111;
   border:1px solid #ff6eb466;border-radius:12px;
@@ -257,20 +250,44 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   #lb-name-input::placeholder{color:#444}
   #lb-name-input:focus{border-color:#ff6eb4}
 
-/* CONFETTI */
-.confetti-piece {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  top: -12px;
-  pointer-events: none;
-  z-index: 9999;
-  animation: confetti-fall linear forwards;
+/* UNLOCK SCREEN ANIMATION - pure CSS, zero JS needed */
+@keyframes unlockEntrance {
+  0%   { opacity: 0; transform: scale(0.94); }
+  50%  { transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
 }
-@keyframes confetti-fall {
-  0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  75%  { opacity: 1; }
-  100% { transform: translateY(120vh) rotate(800deg) scale(0.4); opacity: 0; }
+@keyframes badgePop {
+  0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
+  65%  { transform: scale(1.18) rotate(3deg); opacity: 1; }
+  85%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes slideUp {
+  0%   { transform: translateY(24px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 1; }
+}
+@keyframes pinkPulse {
+  0%,100% { box-shadow: 0 0 0px #ff6eb400; }
+  50%      { box-shadow: 0 0 28px #ff6eb466, 0 0 60px #ff6eb422; }
+}
+#s-unlock.on {
+  animation: unlockEntrance 0.55s cubic-bezier(0.22,1,0.36,1) both;
+}
+#s-unlock.on .ubadge {
+  animation: badgePop 0.55s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+#s-unlock.on .ucov {
+  animation: slideUp 0.5s 0.2s cubic-bezier(0.22,1,0.36,1) both,
+             pinkPulse 1.5s 0.4s ease-in-out 2;
+}
+#s-unlock.on .uname {
+  animation: slideUp 0.5s 0.3s cubic-bezier(0.22,1,0.36,1) both;
+}
+#s-unlock.on .aplayer {
+  animation: slideUp 0.5s 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+#s-unlock.on #btn-cont {
+  animation: slideUp 0.5s 0.5s cubic-bezier(0.22,1,0.36,1) both;
 }
 </style>
 </head>
@@ -366,30 +383,30 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <!-- UNLOCK -->
 <div id="s-unlock" class="screen">
   <div class="ubadge">Morceau debloque !</div>
-  <div class="wv playing" id="wv">
-    <div class="wb" style="animation-delay:0s"></div>
-    <div class="wb" style="animation-delay:.1s"></div>
-    <div class="wb" style="animation-delay:.2s"></div>
-    <div class="wb" style="animation-delay:.3s"></div>
-    <div class="wb" style="animation-delay:.4s"></div>
-    <div class="wb" style="animation-delay:.5s"></div>
-    <div class="wb" style="animation-delay:.6s"></div>
-    <div class="wb" style="animation-delay:.7s"></div>
+  <div class="wv" id="wv">
+    <div class="wb" style="animation-delay:0s;height:6px"></div>
+    <div class="wb" style="animation-delay:.08s;height:10px"></div>
+    <div class="wb" style="animation-delay:.16s;height:14px"></div>
+    <div class="wb" style="animation-delay:.24s;height:8px"></div>
+    <div class="wb" style="animation-delay:.32s;height:12px"></div>
+    <div class="wb" style="animation-delay:.40s;height:16px"></div>
+    <div class="wb" style="animation-delay:.48s;height:10px"></div>
+    <div class="wb" style="animation-delay:.56s;height:7px"></div>
   </div>
   <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">
     <div class="ucov"><img src="cover.jpg" id="ucov-img" alt="cover"></div>
     <div style="text-align:left">
       <div class="unum" id="u-num"></div>
       <div class="uname" id="u-name"></div>
-      <div class="wv playing" id="wv2">
-    <div class="wb" style="animation-delay:.05s"></div>
-    <div class="wb" style="animation-delay:.15s"></div>
-    <div class="wb" style="animation-delay:.25s"></div>
-    <div class="wb" style="animation-delay:.35s"></div>
-    <div class="wb" style="animation-delay:.45s"></div>
-    <div class="wb" style="animation-delay:.55s"></div>
-    <div class="wb" style="animation-delay:.65s"></div>
-    <div class="wb" style="animation-delay:.75s"></div>
+      <div class="wv" id="wv2">
+    <div class="wb" style="animation-delay:.05s;height:8px"></div>
+    <div class="wb" style="animation-delay:.13s;height:14px"></div>
+    <div class="wb" style="animation-delay:.21s;height:10px"></div>
+    <div class="wb" style="animation-delay:.29s;height:16px"></div>
+    <div class="wb" style="animation-delay:.37s;height:6px"></div>
+    <div class="wb" style="animation-delay:.45s;height:12px"></div>
+    <div class="wb" style="animation-delay:.53s;height:9px"></div>
+    <div class="wb" style="animation-delay:.61s;height:13px"></div>
   </div>
     </div>
   </div>
@@ -434,43 +451,22 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <div id="s-bonus" class="screen">
   <div style="font-size:9px;color:#888;letter-spacing:5px;text-transform:uppercase">Niveau 14 complété</div>
   <div style="font-size:32px;font-weight:900;color:#ff6eb4;font-style:italic;text-shadow:2px 2px 0 #7f0040">HOODBOYZ<br>DEBLOQUE !</div>
-  <div class="wv playing" id="wv-bonus" style="justify-content:center">
-    <div class="wb" style="animation-delay:0s"></div>
-    <div class="wb" style="animation-delay:.09s"></div>
-    <div class="wb" style="animation-delay:.18s"></div>
-    <div class="wb" style="animation-delay:.27s"></div>
-    <div class="wb" style="animation-delay:.36s"></div>
-    <div class="wb" style="animation-delay:.45s"></div>
-    <div class="wb" style="animation-delay:.54s"></div>
-    <div class="wb" style="animation-delay:.63s"></div>
-  </div>
+  <div class="wv" id="wv-bonus" style="justify-content:center"></div>
   <div class="bonus-card">
     <div class="bonus-exclu">🎁 EXCLUSIVITE</div>
     <div class="bonus-lock">🔓</div>
     <div class="bonus-title" id="bonus-track-name">TITRE BONUS</div>
     <div class="bonus-sub">Morceau inédit · Réservé aux vrais fans</div>
-    <div class="wv playing" id="wv-bonus2" style="justify-content:center;margin:8px 0">
-    <div class="wb" style="animation-delay:.04s"></div>
-    <div class="wb" style="animation-delay:.13s"></div>
-    <div class="wb" style="animation-delay:.22s"></div>
-    <div class="wb" style="animation-delay:.31s"></div>
-    <div class="wb" style="animation-delay:.40s"></div>
-    <div class="wb" style="animation-delay:.49s"></div>
-    <div class="wb" style="animation-delay:.58s"></div>
-    <div class="wb" style="animation-delay:.67s"></div>
-  </div>
+    <div class="wv" id="wv-bonus2" style="justify-content:center;margin:8px 0"></div>
     <button id="bonus-dl-btn" onclick="downloadBonus()" class="btn-download">
       <span class="dl-icon">⬇</span>
       <span>TÉLÉCHARGER L'EXCLU</span>
     </button>
   </div>
-  <div id="bonus-ios-hint" style="display:none;font-size:10px;color:#ffb347;letter-spacing:1px;text-align:center;padding:8px 12px;border:1px solid #ffb34755;border-radius:6px;max-width:300px;line-height:1.5">
-    📱 Sur iPhone : appuie sur <b style="color:#fff">⬇ Télécharger</b> puis partage → <b style="color:#fff">Enregistrer dans Fichiers</b>
-  </div>
   <div style="font-size:9px;color:#555;letter-spacing:2px;margin-top:4px">Merci d'avoir joué · BABYBOY MUSIK · 22 Mai</div>
   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
-    <button class="btn-main" onclick="showFinalWin()" style="margin-top:0">TRACKLIST</button>
-    <button class="btn-sec" onclick="closeBonusToMenu()" style="margin-top:0">MENU</button>
+    <button class="btn-main" onclick="showFinalWin()" style="margin-top:0">VOIR LA TRACKLIST</button>
+    <button class="btn-sec" onclick="showTitle()" style="margin-top:0">MENU</button>
   </div>
 </div>
 
@@ -1127,22 +1123,14 @@ function spawnLvPt() {
 /* ---------- GAME FLOW ---------- */
 function showTitle() {
   clearPrev(); stopBG();
+  ['s-unlock', 's-win', 's-go', 'hud'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList ? el.classList.remove('on') : (el.style.display = 'none');
+  });
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('s-title').classList.add('on');
   if (G.loop) { cancelAnimationFrame(G.loop); G.loop = null; }
   G.run = false;
-  // Hide ALL screens
-  ['s-unlock','s-win','s-go','s-lb','s-bonus'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('on');
-  });
-  const hud = document.getElementById('hud');
-  if (hud) hud.style.display = 'none';
-  document.getElementById('s-title').classList.add('on');
-}
-
-function closeBonusToMenu() {
-  const bonus = document.getElementById('s-bonus');
-  if (bonus) bonus.classList.remove('on');
-  showTitle();
 }
 
 function startGame() {
@@ -1272,17 +1260,19 @@ function showGO() {
   setTimeout(() => autoSubmitScore(), 500);
 }
 function makeWaves(id) {
-  // Bars are pre-built and always animate — nothing to do
+  // Bars are pre-built in HTML — just start the animation
+  const w = document.getElementById(id);
+  if (w) w.classList.add('playing');
 }
 function stopWaves(id) {
-  // Bars always animate on unlock screen
+  const w = document.getElementById(id);
+  if (w) w.classList.remove('playing');
 }
 
 function showUnlock(idx) {
   document.getElementById('u-num').textContent = 'MORCEAU ' + (idx + 1) + ' / 14';
   document.getElementById('u-name').textContent = TRACKS[idx];
   makeWaves('wv'); makeWaves('wv2');
-  launchConfetti();
   loadTrack(idx);
 
   if (idx >= 13) {
@@ -1298,32 +1288,11 @@ function showUnlock(idx) {
 
 function downloadBonus() {
   if (!BONUS_TRACK.available) {
-    alert('Le morceau bonus arrive bientot ! \u00f0\u009f\u008e\u0081');
+    alert('Le morceau bonus arrive bientot ! 🎁');
     return;
   }
-  // Create hidden <a> with download attr and click it
-  const a = document.createElement('a');
-  a.href = BONUS_TRACK.file;
-  a.download = (BONUS_TRACK.name || 'BONUS') + '.mp3';
-  a.target = '_blank';
-  // For iOS: show instructions since direct download is blocked
-  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  if (isIOS) {
-    // Open audio in new tab — user can then use share sheet to save
-    const w = window.open(BONUS_TRACK.file, '_blank');
-    if (!w) {
-      // Popup blocked — fallback to same tab
-      document.location.href = BONUS_TRACK.file;
-    }
-    // Show iOS save instructions
-    setTimeout(() => {
-      document.getElementById('bonus-ios-hint').style.display = 'block';
-    }, 500);
-  } else {
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+  // Open in new tab — works on iOS without blocking navigation
+  window.open(BONUS_TRACK.file, '_blank');
 }
 
 function showBonusScreen() {
@@ -1782,48 +1751,9 @@ function drawTrail() {
 }
 </script>
 <script>
-/* ============================================================
-   CONFETTI
-   ============================================================ */
-function launchConfetti() {
-  const colors = ['#ff6eb4','#ff90c8','#ffffff','#7f77dd','#ffb347','#ff6eb4','#fff','#ff6eb4'];
-  const shapes = ['square','circle','rect'];
-  const count = 90;
-  const root = document.getElementById('root');
-
-  // Temporarily allow overflow so confetti shows over everything
-  root.style.overflow = 'visible';
-  setTimeout(() => { root.style.overflow = 'hidden'; }, 3500);
-
-  for (let i = 0; i < count; i++) {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.className = 'confetti-piece';
-
-      const shape = shapes[Math.floor(Math.random() * shapes.length)];
-      if (shape === 'circle') el.style.borderRadius = '50%';
-      else if (shape === 'rect') { el.style.width = '4px'; el.style.height = '14px'; }
-
-      el.style.background = colors[Math.floor(Math.random() * colors.length)];
-      // Position relative to root (use % of root width)
-      el.style.left = (Math.random() * 100) + '%';
-      el.style.top = '-12px';
-
-      const duration = 1.4 + Math.random() * 1.8;
-      el.style.animationDuration = duration + 's';
-      el.style.animationDelay = (Math.random() * 0.5) + 's';
-
-      root.appendChild(el);
-      setTimeout(() => { if(el.parentNode) el.parentNode.removeChild(el); }, (duration + 0.8) * 1000);
-    }, i * 15);
-  }
-}
-
-// Register PWA Service Worker (only on real domain, not preview)
+// Register PWA Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const isGitHub = location.hostname.includes('github.io') || location.hostname.includes('bkrbabyboy');
-    if (!isGitHub) return; // skip on preview/local
     navigator.serviceWorker.register('sw.js')
       .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
       .catch(err => console.log('[PWA] SW registration failed:', err));
