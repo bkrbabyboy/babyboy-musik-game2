@@ -215,6 +215,30 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   #root {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* COUNTDOWN */
+  #cd-wrap{margin:8px 0 4px;text-align:center}
+  .cd-block{display:inline-flex;flex-direction:column;align-items:center;min-width:38px}
+  .cd-num{font-size:30px;font-weight:900;color:#ff6eb4;line-height:1;text-shadow:0 0 14px #ff6eb488;font-variant-numeric:tabular-nums}
+  .cd-lbl{font-size:7px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+  .cd-sep{font-size:26px;font-weight:900;color:#ff6eb433;align-self:flex-start;margin-top:4px;padding:0 2px}
+  #cd-released{display:none;font-size:14px;font-weight:900;color:#ff6eb4;letter-spacing:3px;text-shadow:0 0 16px #ff6eb4;animation:cinemapulse 0.8s infinite alternate}
+  /* CINEMA */
+  #cinema-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:25;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;pointer-events:none}
+  #cinema-overlay.show{display:flex}
+  #cinema-canvas{display:block;border-radius:50%;box-shadow:0 0 30px #ff6eb455}
+  .cinema-txt{font-size:12px;color:#ff6eb4;letter-spacing:4px;text-transform:uppercase;animation:cinemapulse 0.7s ease-in-out infinite alternate}
+  @keyframes cinemapulse{from{opacity:0.4}to{opacity:1}}
+  /* LEADERBOARD */
+  #s-lb{background:#0a0a0af8;gap:8px;padding:16px 12px;text-align:center}
+  .lb-row{display:flex;align-items:center;gap:8px;background:#111;border:1px solid #ff6eb422;border-radius:8px;padding:8px 12px;width:100%}
+  .lb-rank{font-size:13px;font-weight:900;color:#ff6eb4;min-width:24px;text-align:center}
+  .lb-name{flex:1;font-size:12px;font-weight:700;color:#fff;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lb-score{font-size:13px;font-weight:900;color:#ffb347}
+  .lb-lvl{font-size:9px;color:#666;letter-spacing:1px}
+  #lb-name-input{flex:1;background:#111;border:1px solid #ff6eb444;color:#fff;padding:10px 12px;font-size:13px;font-family:Arial,sans-serif;border-radius:6px;outline:none;min-width:0}
+  #lb-name-input::placeholder{color:#444}
+  #lb-name-input:focus{border-color:#ff6eb4}
 </style>
 </head>
 <body>
@@ -228,6 +252,19 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <img src="cover.jpg" style="width:120px;height:120px;object-fit:cover;border:2px solid #ff6eb4;border-radius:8px;margin:2px 0 10px">
   <button class="btn-main" onclick="startGame()">JOUER</button>
   <div style="font-size:9px;color:#444;letter-spacing:2px;margin-top:10px">Tape à droite ou à gauche de l'écran pour diriger BKRBABYBOY</div>
+  <div id="cd-wrap">
+    <div style="font-size:8px;color:#666;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Album disponible dans</div>
+    <div style="display:flex;align-items:flex-start;justify-content:center;gap:0">
+      <div class="cd-block"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">jours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">heures</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">min</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">sec</div></div>
+    </div>
+    <div id="cd-released">DISPONIBLE MAINTENANT 🔥</div>
+  </div>
 </div>
 
 <!-- HUD -->
@@ -243,6 +280,10 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <div id="touch-hint">Glisse gauche / droite</div>
 
 <!-- Level up overlay -->
+<div id="cinema-overlay">
+  <canvas id="cinema-canvas" width="180" height="180"></canvas>
+  <div class="cinema-txt" id="cinema-txt">NIVEAU DEBLOQUE !</div>
+</div>
 <div id="lvo">
   <div class="lvring" id="lvring"></div>
   <div class="lvtxt" id="lvtxt">NIVEAU 2</div>
@@ -256,7 +297,8 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <div style="font-size:34px;font-weight:900;color:#fff" id="go-lvl">1</div>
   <div style="font-size:12px;color:#666">Score : <span id="go-sc" style="color:#fff;font-weight:900">0</span></div>
   <button class="btn-main" onclick="retryLevel()" style="margin-top:10px">RECOMMENCER</button>
-  <button class="btn-sec" onclick="showTitle()" style="margin-top:8px">MENU</button>
+  <button class="btn-sec" onclick="openLB()" style="margin-top:6px">🏆 SCORES</button>
+  <button class="btn-sec" onclick="showTitle()" style="margin-top:6px">MENU</button>
 </div>
 
 <!-- UNLOCK -->
@@ -303,7 +345,8 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <div class="winbig">BABYBOY MUSIK<br>est a toi !</div>
   <img src="cover.jpg" style="width:110px;height:110px;object-fit:cover;border:2px solid #ff6eb4;border-radius:8px;margin:4px 0">
   <div class="twrap" id="win-tracks"></div>
-  <button class="btn-sec" onclick="startGame()" style="margin-top:10px">REJOUER</button>
+  <button class="btn-sec" onclick="openLB()" style="margin-top:6px">🏆 SCORES</button>
+  <button class="btn-sec" onclick="startGame()" style="margin-top:6px">REJOUER</button>
 </div>
 
 
@@ -327,6 +370,17 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   <button class="btn-main" onclick="showFinalWin()" style="margin-top:10px">VOIR L'ALBUM COMPLET</button>
 </div>
 
+<!-- LEADERBOARD -->
+<div id="s-lb" class="screen">
+  <div style="font-size:9px;color:#ff6eb4;letter-spacing:4px;text-transform:uppercase;border:1px solid #ff6eb4;padding:4px 14px">🏆 TOP 10</div>
+  <div id="lb-list" style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto"></div>
+  <div style="display:flex;gap:8px;width:100%;max-width:340px">
+    <input id="lb-name-input" maxlength="14" placeholder="Ton pseudo...">
+    <button onclick="submitScore()" style="background:#ff6eb4;color:#000;border:none;padding:10px 14px;font-size:12px;font-weight:900;cursor:pointer;border-radius:6px;font-family:Arial,sans-serif;white-space:nowrap;flex-shrink:0">ENVOYER</button>
+  </div>
+  <div id="lb-status" style="font-size:9px;color:#888;letter-spacing:1px;min-height:14px"></div>
+  <button class="btn-sec" onclick="closeLB()">FERMER</button>
+</div>
 </div><!-- #root -->
 
 <script>
@@ -1041,7 +1095,7 @@ function gloop() {
     const ring = document.getElementById('lvring');
     ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = 'ringout .85s ease-out forwards';
     const lvo = document.getElementById('lvo'); lvo.classList.add('show');
-    setTimeout(() => { lvo.classList.remove('show'); showUnlock(G.lvl - 1); }, 1900);
+    setTimeout(() => { lvo.classList.remove('show'); runCinematicThenUnlock(G.lvl - 1); }, 1900);
     return;
   }
 
@@ -1051,7 +1105,9 @@ function gloop() {
   // --- RENDER ---
   ctx.clearRect(0, 0, W, H);
   drawBG();
+  updateTrail();
   G.plats.forEach(p => { const sy2 = p.y - G.cam; if (sy2 > -20 && sy2 < H + 20) drawPlat({ ...p, y: sy2 }); });
+  drawTrail();
   G.pts.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1;
   drawPlayer(G.px, G.py, G.vx, G.vy < -2);
 
@@ -1075,6 +1131,7 @@ function updateHUD() {
 function showGO() {
   document.getElementById('go-lvl').textContent = G.lvl;
   document.getElementById('go-sc').textContent = G.score;
+  pendingScore = { score: G.score, level: G.lvl };
   document.getElementById('s-go').classList.add('on');
 }
 function makeWaves(id) {
@@ -1177,6 +1234,299 @@ document.addEventListener('touchmove', e => { if (e.target === document.body) e.
 
 window.addEventListener('resize', () => { resize(); });
 resize();
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+function updateCountdown() {
+  const release = new Date('2025-05-22T00:00:00');
+  const now = new Date();
+  const diff = release - now;
+  if (diff <= 0) {
+    document.getElementById('cd-wrap').style.display = 'none';
+    const rel = document.getElementById('cd-released');
+    if (rel) { rel.style.display = 'block'; }
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const pad = n => String(n).padStart(2,'0');
+  const el = id => document.getElementById(id);
+  if(el('cd-d')) el('cd-d').textContent = pad(d);
+  if(el('cd-h')) el('cd-h').textContent = pad(h);
+  if(el('cd-m')) el('cd-m').textContent = pad(m);
+  if(el('cd-s')) el('cd-s').textContent = pad(s);
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+/* ============================================================
+   LEADERBOARD — JSONBin.io (free, no auth needed for read)
+   ============================================================ */
+// Create a FREE bin at jsonbin.io — paste your BIN_ID below
+// Steps: 1. Go to jsonbin.io  2. Create account (free)
+// 3. New Bin with: {"scores":[]}  4. Copy the bin ID here
+const JSONBIN_ID = 'VOTRE_BIN_ID_ICI';  // <-- remplace par ton vrai ID
+const JSONBIN_KEY = 'VOTRE_API_KEY_ICI'; // <-- remplace par ta clé API JSONBin
+
+let lbScores = [];
+let pendingScore = null;
+
+async function fetchScores() {
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_ID + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    const data = await res.json();
+    lbScores = (data.record && data.record.scores) ? data.record.scores : [];
+  } catch(e) {
+    lbScores = [];
+  }
+}
+
+async function saveScores(scores) {
+  try {
+    await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_ID, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY
+      },
+      body: JSON.stringify({ scores })
+    });
+  } catch(e) {}
+}
+
+function renderLB() {
+  const list = document.getElementById('lb-list');
+  if (!list) return;
+  if (!lbScores.length) {
+    list.innerHTML = '<div style="color:#555;font-size:11px;letter-spacing:2px;padding:16px">Aucun score pour le moment</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = lbScores.slice(0,10).map((s,i) => `
+    <div class="lb-row">
+      <div class="lb-rank">${medals[i] || (i+1)}</div>
+      <div class="lb-name">${s.name || 'Anonyme'}</div>
+      <div class="lb-lvl">Niv.${s.level || 1}</div>
+      <div class="lb-score">${s.score || 0}</div>
+    </div>
+  `).join('');
+}
+
+function openLB() {
+  fetchScores().then(() => {
+    renderLB();
+    if (pendingScore) {
+      document.getElementById('lb-status').textContent = 'Entre ton pseudo pour sauvegarder ton score !';
+    }
+  });
+  ['s-go','s-win','s-title','s-unlock'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('on');
+  });
+  document.getElementById('s-lb').classList.add('on');
+}
+
+function closeLB() {
+  document.getElementById('s-lb').classList.remove('on');
+  pendingScore = null;
+}
+
+async function submitScore() {
+  const nameEl = document.getElementById('lb-name-input');
+  const name = (nameEl.value || '').trim();
+  if (!name) { document.getElementById('lb-status').textContent = 'Entre un pseudo !'; return; }
+  if (!pendingScore) { document.getElementById('lb-status').textContent = 'Joue une partie pour soumettre un score !'; return; }
+  if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') {
+    document.getElementById('lb-status').textContent = 'Configure JSONBin dans le code pour activer les scores en ligne !';
+    return;
+  }
+
+  document.getElementById('lb-status').textContent = 'Envoi en cours...';
+  await fetchScores();
+  const newEntry = { name, score: pendingScore.score, level: pendingScore.level, date: new Date().toISOString().slice(0,10) };
+  lbScores.push(newEntry);
+  lbScores.sort((a,b) => b.score - a.score);
+  lbScores = lbScores.slice(0,10);
+  await saveScores(lbScores);
+  renderLB();
+  document.getElementById('lb-status').textContent = '✓ Score enregistré !';
+  pendingScore = null;
+  nameEl.value = '';
+}
+
+/* ============================================================
+   CINEMATIC DANCE ANIMATION
+   ============================================================ */
+const LEVEL_COLORS = [
+  '#ff6eb4','#ff6eb4','#7f77dd','#7f77dd','#ffb347','#ffb347',
+  '#5dcaa5','#5dcaa5','#ff4444','#ff4444','#4488ff','#4488ff',
+  '#f5c842','#ff6eb4'
+];
+
+function runCinematicThenUnlock(idx) {
+  const overlay = document.getElementById('cinema-overlay');
+  const cvs = document.getElementById('cinema-canvas');
+  const txt = document.getElementById('cinema-txt');
+  if (!overlay || !cvs) { showUnlock(idx); return; }
+
+  overlay.classList.add('show');
+  txt.textContent = TRACKS[idx] + ' — DEBLOQUE !';
+
+  const cc = cvs.getContext('2d');
+  const CW = 180, CH = 180;
+  let frame = 0;
+  const col = LEVEL_COLORS[idx] || '#ff6eb4';
+  const totalFrames = 120; // 2 seconds at 60fps
+
+  function drawDance() {
+    cc.clearRect(0,0,CW,CH);
+    const t = frame / totalFrames;
+    const bounce = Math.abs(Math.sin(frame * 0.2)) * 10;
+    const sway = Math.sin(frame * 0.15) * 8;
+    const spin = frame * 3;
+
+    // Background glow circle
+    const grd = cc.createRadialGradient(CW/2, CH/2, 5, CW/2, CH/2, 80);
+    grd.addColorStop(0, col + '44');
+    grd.addColorStop(1, 'transparent');
+    cc.fillStyle = grd;
+    cc.beginPath(); cc.arc(CW/2, CH/2, 80, 0, Math.PI*2); cc.fill();
+
+    // Rotating sparkles
+    for(let i=0;i<8;i++){
+      const a = (spin + i*45) * Math.PI/180;
+      const r = 60 + Math.sin(frame*0.1+i)*10;
+      const sx = CW/2 + Math.cos(a)*r;
+      const sy = CH/2 + Math.sin(a)*r;
+      cc.fillStyle = col;
+      cc.globalAlpha = 0.7 + Math.sin(frame*0.2+i)*0.3;
+      cc.beginPath(); cc.arc(sx, sy, 3+Math.sin(frame*0.15+i)*2, 0, Math.PI*2); cc.fill();
+    }
+    cc.globalAlpha = 1;
+
+    // Draw player dancing
+    cc.save();
+    cc.translate(CW/2 + sway, CH/2 - bounce);
+
+    // Body (hoodie)
+    cc.fillStyle = '#ff6eb4';
+    cc.beginPath(); cc.roundRect(-18, -10, 36, 30, 5); cc.fill();
+    // Arm left (waving up/down)
+    const armAngle = Math.sin(frame * 0.25) * 0.8;
+    cc.save();
+    cc.translate(-18, 0);
+    cc.rotate(-armAngle - 0.3);
+    cc.fillStyle = '#ff6eb4';
+    cc.beginPath(); cc.roundRect(-10, -5, 10, 22, 4); cc.fill();
+    cc.restore();
+    // Arm right (opposite)
+    cc.save();
+    cc.translate(18, 0);
+    cc.rotate(armAngle + 0.3);
+    cc.fillStyle = '#ff6eb4';
+    cc.beginPath(); cc.roundRect(0, -5, 10, 22, 4); cc.fill();
+    cc.restore();
+    // Legs
+    const legSwing = Math.sin(frame * 0.25) * 6;
+    cc.fillStyle = '#1a1a1a';
+    cc.beginPath(); cc.roundRect(-14, 20, 12, 20, 3); cc.fill();
+    cc.beginPath(); cc.roundRect(2, 20, 12, 20, 3); cc.fill();
+    // Shoes
+    cc.fillStyle = '#ff8fc8';
+    cc.beginPath(); cc.roundRect(-16, 38, 14, 6, 2); cc.fill();
+    cc.beginPath(); cc.roundRect(2, 38, 14, 6, 2); cc.fill();
+    // Head
+    cc.fillStyle = '#b8784a';
+    cc.beginPath(); cc.roundRect(-13, -36, 26, 28, 8); cc.fill();
+    // Eyes (blinking)
+    if (frame % 40 < 36) {
+      cc.fillStyle = '#1a0800';
+      cc.beginPath(); cc.ellipse(-5, -26, 3.5, 3, 0, 0, Math.PI*2); cc.fill();
+      cc.beginPath(); cc.ellipse(5, -26, 3.5, 3, 0, 0, Math.PI*2); cc.fill();
+    } else {
+      cc.fillStyle = '#1a0800';
+      cc.fillRect(-8, -27, 6, 2);
+      cc.fillRect(2, -27, 6, 2);
+    }
+    // Smile
+    cc.strokeStyle = '#7a4020'; cc.lineWidth = 1.8;
+    cc.beginPath(); cc.arc(0, -18, 5, 0.2, Math.PI-0.2); cc.stroke();
+    // Beanie
+    cc.fillStyle = '#111';
+    cc.beginPath(); cc.roundRect(-13, -50, 26, 18, 5); cc.fill();
+    // Earring
+    cc.fillStyle = '#ffe066';
+    cc.beginPath(); cc.arc(-17, -30, 3, 0, Math.PI*2); cc.fill();
+    cc.fillStyle = 'rgba(255,255,255,0.9)';
+    cc.beginPath(); cc.arc(-17, -30, 1.5, 0, Math.PI*2); cc.fill();
+    cc.restore();
+
+    // Music notes floating up
+    if (frame % 15 === 0) {
+      // spawn note (tracked externally)
+    }
+    // Draw floating notes
+    for(let n=0;n<5;n++){
+      const noteT = (frame + n*24) % 120;
+      const nx = CW/2 + Math.sin(n*1.2)*30 + Math.cos(frame*0.05+n)*15;
+      const ny = CH/2 + 30 - noteT * 0.8;
+      if(ny < 20 || ny > CH) continue;
+      cc.globalAlpha = Math.max(0, 1 - noteT/80);
+      cc.fillStyle = col;
+      cc.font = 'bold 14px Arial';
+      cc.textAlign = 'center';
+      cc.fillText('♪', nx, ny);
+    }
+    cc.globalAlpha = 1;
+
+    frame++;
+    if (frame < totalFrames) {
+      requestAnimationFrame(drawDance);
+    } else {
+      overlay.classList.remove('show');
+      showUnlock(idx);
+    }
+  }
+  requestAnimationFrame(drawDance);
+}
+
+/* ============================================================
+   TRAIL (luminous trail behind player when jumping high)
+   ============================================================ */
+let trailPoints = [];
+const TRAIL_MAX = 18;
+
+function updateTrail() {
+  if (!G.run) return;
+  const col = LEVEL_COLORS[Math.min(G.lvl-1, LEVEL_COLORS.length-1)] || '#ff6eb4';
+  if (G.vy < -4) { // only when going up fast
+    trailPoints.unshift({ x: G.px, y: G.py, life: 1, col, r: 8 - Math.abs(G.vy)*0.2 });
+    if (trailPoints.length > TRAIL_MAX) trailPoints.pop();
+  } else {
+    // Fade existing trail faster when not rising
+    trailPoints = trailPoints.filter(p => p.life > 0.1);
+  }
+  trailPoints.forEach(p => p.life -= 0.07);
+  trailPoints = trailPoints.filter(p => p.life > 0);
+}
+
+function drawTrail() {
+  trailPoints.forEach((p, i) => {
+    const r = Math.max(1, p.r * p.life);
+    ctx.globalAlpha = p.life * 0.6;
+    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r*2);
+    grd.addColorStop(0, p.col);
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(p.x, p.y, r*2, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
 </script>
 </body>
 </html>
