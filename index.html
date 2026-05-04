@@ -256,6 +256,22 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   #lb-name-input{flex:1;background:#111;border:1px solid #ff6eb444;color:#fff;padding:10px 12px;font-size:13px;font-family:Arial,sans-serif;border-radius:6px;outline:none;min-width:0}
   #lb-name-input::placeholder{color:#444}
   #lb-name-input:focus{border-color:#ff6eb4}
+
+/* CONFETTI */
+.confetti-piece {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  top: -10px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+}
 </style>
 </head>
 <body>
@@ -1266,6 +1282,7 @@ function showUnlock(idx) {
   document.getElementById('u-num').textContent = 'MORCEAU ' + (idx + 1) + ' / 14';
   document.getElementById('u-name').textContent = TRACKS[idx];
   makeWaves('wv'); makeWaves('wv2');
+  launchConfetti();
   loadTrack(idx);
 
   if (idx >= 13) {
@@ -1765,6 +1782,43 @@ function drawTrail() {
 }
 </script>
 <script>
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function launchConfetti() {
+  const colors = ['#ff6eb4','#ff90c8','#ffffff','#7f77dd','#ffb347','#ff6eb4','#fff','#ff6eb4'];
+  const shapes = ['square','circle','rect'];
+  const count = 80;
+
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+
+      // Random shape
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      if (shape === 'circle') el.style.borderRadius = '50%';
+      else if (shape === 'rect') { el.style.width = '4px'; el.style.height = '12px'; }
+
+      // Random color
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+      // Random position & speed
+      el.style.left = Math.random() * 100 + 'vw';
+      const duration = 1.2 + Math.random() * 1.8;
+      el.style.animationDuration = duration + 's';
+      el.style.animationDelay = (Math.random() * 0.4) + 's';
+
+      // Slight horizontal drift via CSS variable
+      el.style.setProperty('--drift', (Math.random() - 0.5) * 200 + 'px');
+
+      document.body.appendChild(el);
+      // Remove after animation
+      setTimeout(() => el.remove(), (duration + 0.6) * 1000);
+    }, i * 18);
+  }
+}
+
 // Register PWA Service Worker (only on real domain, not preview)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
