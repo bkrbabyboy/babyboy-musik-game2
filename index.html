@@ -5,7 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BABYBOY MUSIK">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ff6eb4">
+<meta name="description" content="Le jeu officiel de BKRBABYBOY — Débloque les 14 morceaux de l'album BABYBOY MUSIK !">
+<!-- PWA Manifest -->
+<link rel="manifest" href="/babyboy-musik-game2/manifest.json">
+<!-- Apple touch icons -->
+<!-- Apple touch icons — absolute paths for GitHub Pages -->
+<link rel="apple-touch-icon" sizes="180x180" href="/babyboy-musik-game2/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/babyboy-musik-game2/icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/babyboy-musik-game2/icons/icon-144.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/babyboy-musik-game2/icons/icon-128.png">
+<link rel="apple-touch-icon" sizes="76x76"  href="/babyboy-musik-game2/icons/icon-96.png">
+<link rel="apple-touch-icon"                href="/babyboy-musik-game2/icons/icon-512.png">
+<link rel="apple-touch-startup-image"       href="/babyboy-musik-game2/icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/babyboy-musik-game2/icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/babyboy-musik-game2/icons/icon-192.png">
 <title>BABYBOY MUSIK</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -238,6 +254,34 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <body>
 <div id="root">
 
+<!-- PWA Install Banner -->
+<div id="pwa-banner" style="
+  display:none;position:absolute;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(135deg,#1a0a20,#0a0a1a);
+  border-top:2px solid #ff6eb4;
+  padding:14px 16px;
+  flex-direction:row;align-items:center;gap:12px;
+  pointer-events:all;
+  box-shadow:0 -4px 20px rgba(255,110,180,0.3);
+">
+  <img src="icons/icon-72.png" style="width:48px;height:48px;border-radius:10px;flex-shrink:0;">
+  <div style="flex:1;min-width:0">
+    <div style="font-size:12px;font-weight:900;color:#fff;letter-spacing:1px">BABYBOY MUSIK</div>
+    <div style="font-size:9px;color:#aaa;letter-spacing:1px;margin-top:2px">Installer l'app sur ton téléphone</div>
+  </div>
+  <button onclick="installPWA()" style="
+    background:#ff6eb4;color:#000;border:none;
+    padding:10px 16px;font-size:11px;font-weight:900;
+    letter-spacing:2px;text-transform:uppercase;
+    cursor:pointer;border-radius:6px;font-family:Arial,sans-serif;
+    white-space:nowrap;flex-shrink:0;
+  ">INSTALLER</button>
+  <button onclick="dismissBanner()" style="
+    background:transparent;color:#888;border:none;
+    font-size:20px;cursor:pointer;padding:0 4px;flex-shrink:0;line-height:1;
+  ">✕</button>
+</div>
+
 <!-- TITLE -->
 <div id="s-title" class="screen on">
   <div style="font-size:9px;color:#aaa;letter-spacing:5px;text-transform:uppercase;margin-bottom:2px">BKRBABYBOY presents</div>
@@ -271,7 +315,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <canvas id="gc"></canvas>
 
 <!-- Touch hint -->
-<div id="touch-hint">Tapote gauche / droite</div>
+<div id="touch-hint">Glisse gauche / droite</div>
 
 <!-- Level up overlay -->
 <div id="cinema-overlay">
@@ -1606,6 +1650,52 @@ function drawTrail() {
     ctx.beginPath(); ctx.arc(p.x, p.y, r*2, 0, Math.PI*2); ctx.fill();
   });
   ctx.globalAlpha = 1;
+}
+</script>
+<script>
+// Register PWA Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
+      .catch(err => console.log('[PWA] SW registration failed:', err));
+  });
+}
+
+// PWA Install prompt — show custom install button
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner after 3 seconds
+  setTimeout(showInstallBanner, 3000);
+});
+
+function showInstallBanner() {
+  if (!deferredPrompt) return;
+  const banner = document.getElementById('pwa-banner');
+  if (banner) banner.style.display = 'flex';
+}
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      console.log('[PWA] User accepted install');
+      document.getElementById('pwa-banner').style.display = 'none';
+    }
+    deferredPrompt = null;
+  });
+}
+
+function dismissBanner() {
+  document.getElementById('pwa-banner').style.display = 'none';
+}
+
+// Show banner again when app is standalone (already installed)
+if (window.matchMedia('(display-mode: fullscreen)').matches) {
+  console.log('[PWA] Running as installed app!');
 }
 </script>
 </body>
