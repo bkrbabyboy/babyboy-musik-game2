@@ -212,11 +212,9 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   .dl-icon {font-size:18px}
   .bonus-lock {font-size:36px;margin:4px 0}
   /* ---- MOBILE PERFORMANCE ---- */
-  * { -webkit-transform: translateZ(0); }
-  canvas { 
+  canvas {
     image-rendering: auto;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
+    display: block;
   }
   #root {
     -webkit-overflow-scrolling: touch;
@@ -370,7 +368,7 @@ const TRACKS = [
 // BONUS EXCLUSIVE TRACK — add your bonus MP3 file to audio/ folder
 // Then set BONUS_TRACK below:
 const BONUS_TRACK = {
-  name: "JEEZY2008",          // change to your bonus track title
+  name: "JEEZY2008 EXCLU",          // change to your bonus track title
   file: "audio/bonus.mp3",      // add this file to your audio/ folder
   available: true              // set to true once you add the file
 };
@@ -540,18 +538,14 @@ let G = {
 /* ---------- RESIZE ---------- */
 function resize() {
   const root = document.getElementById('root');
-  // Use device pixel ratio for crisp rendering on retina/mobile screens
-  const DPR = Math.min(window.devicePixelRatio || 1, 2); // cap at 2x to save GPU
   W = root.offsetWidth;
   H = root.offsetHeight;
-  // Set canvas internal size to match physical pixels
-  canvas.width = Math.round(W * DPR);
-  canvas.height = Math.round(H * DPR);
-  // Keep CSS size at logical pixels
+  // Match canvas pixels exactly to CSS pixels — no DPR scaling that would break coordinates
+  canvas.width = W;
+  canvas.height = H;
   canvas.style.width = W + 'px';
   canvas.style.height = H + 'px';
-  // Scale context so all drawing uses logical pixels
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset any previous transform
 }
 
 /* ---------- PLATFORM GEN ---------- */
