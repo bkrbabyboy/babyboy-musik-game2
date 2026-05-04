@@ -269,9 +269,20 @@ const PREVIEW_DURATION = 20;
 const CIRC = 2 * Math.PI * 19;
 
 const TRACK_FILES = [
-  "audio/track_01.mp3","audio/track_02.mp3",
-  "audio/track_03.mp3","audio/track_04.mp3",
-  null,null,null,null,null,null,null,null,null,null
+  "audio/track_01.mp3",
+  "audio/track_02.mp3",
+  "audio/track_03.mp3",
+  "audio/track_04.mp3",
+  "audio/track_05.mp3",
+  "audio/track_06.mp3",
+  "audio/track_07.mp3",
+  "audio/track_08.mp3",
+  "audio/track_09.mp3",
+  "audio/track_10.mp3",
+  "audio/track_11.mp3",
+  "audio/track_12.mp3",
+  "audio/track_13.mp3",
+  "audio/track_14.mp3",
 ];
 const TRACKS = [
   "ARABMONEY FREESTYLE","CLIQUE","MOWEEZY","PUSSYHOLIC",
@@ -455,16 +466,18 @@ function genPlats(lvl) {
   const d = ldiff(lvl);
   G.plats = [];
   let y = H - 60;
-  G.plats.push({ x: W / 2 - 55, y, w: 110, b: false, mv: false, dir: 1, spd: 0 });
+  G.plats.push({ x: W / 2 - 55, y, w: 110, b: false, mv: false, dir: 1, spd: 0, note: 'C4' });
   y -= 62;
-  G.plats.push({ x: W / 2 - 32, y, w: 64, b: false, mv: false, dir: 1, spd: 0 });
+  G.plats.push({ x: W / 2 - 32, y, w: 64, b: false, mv: false, dir: 1, spd: 0, note: 'G4' });
   y -= Math.round(d.gMin + Math.random() * (d.gMax - d.gMin));
+  const _NOTE_NAMES = ['C3','D3','Eb3','F3','G3','Ab3','Bb3','C4','D4','Eb4','F4','G4','Ab4','A4','Bb4','C5','D5','Eb5','F5','G5'];
   while (y > -20000) {
     const w = Math.round(d.wMin + Math.random() * (d.wMax - d.wMin));
     const x = Math.round(Math.random() * (W - w - 12) + 6);
     const isB = Math.random() < d.bncP;
     const isM = !isB && Math.random() < d.movP;
-    G.plats.push({ x, y, w, b: isB, mv: isM, dir: Math.random() < .5 ? 1 : -1, spd: d.spd * (.7 + Math.random() * .6) });
+    const noteName = _NOTE_NAMES[Math.floor(Math.random() * _NOTE_NAMES.length)];
+    G.plats.push({ x, y, w, b: isB, mv: isM, dir: Math.random() < .5 ? 1 : -1, spd: d.spd * (.7 + Math.random() * .6), note: noteName });
     y -= Math.round(d.gMin + Math.random() * (d.gMax - d.gMin));
   }
 }
@@ -707,39 +720,141 @@ function drawPlayer(x, y, vx, jump) {
 
 /* ---------- PLATFORM DRAW ---------- */
 function drawPlat(p) {
-  const R = 12;
-  const grad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + 14);
+  const NH = 18; // note height (taller than old platforms)
+  const R = 4;   // FL Studio notes have small radius
 
+  // ---------- FL STUDIO PIANO ROLL NOTE ----------
+  // Note color: green for normal, purple for bounce, orange for moving
+  let noteCol, noteColLight, noteBorder;
   if (p.b) {
-    grad.addColorStop(0, '#7f77dd'); grad.addColorStop(1, '#2a1a3a');
+    noteCol = '#7060c8'; noteColLight = '#9080e8'; noteBorder = '#a090ff';
   } else if (p.mv) {
-    grad.addColorStop(0, '#ffb347'); grad.addColorStop(1, '#1e1a10');
+    noteCol = '#b07820'; noteColLight = '#d09030'; noteBorder = '#ffb347';
   } else {
-    grad.addColorStop(0, '#ff6eb4'); grad.addColorStop(1, '#252525');
+    noteCol = '#3a8f5a'; noteColLight = '#4db870'; noteBorder = '#5fd080';
   }
 
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.beginPath(); ctx.roundRect(p.x + 2, p.y + 4, p.w, 14, R); ctx.fill();
+  // drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.beginPath(); ctx.roundRect(p.x + 1, p.y + 3, p.w, NH, R); ctx.fill();
 
-  // body
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 14, R); ctx.fill();
+  // note body gradient (FL style — lighter top, darker bottom)
+  const ng = ctx.createLinearGradient(p.x, p.y, p.x, p.y + NH);
+  ng.addColorStop(0, noteColLight);
+  ng.addColorStop(0.4, noteCol);
+  ng.addColorStop(1, noteCol + 'cc');
+  ctx.fillStyle = ng;
+  ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, NH, R); ctx.fill();
 
-  // shine top
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.beginPath(); ctx.roundRect(p.x + 6, p.y + 2, p.w - 12, 4, 2); ctx.fill();
+  // top highlight strip (FL notes have a bright top edge)
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.beginPath(); ctx.roundRect(p.x + 2, p.y + 1, p.w - 4, 4, [R, R, 0, 0]); ctx.fill();
 
-  // glow under bounce
+  // left bright edge (FL note style)
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.beginPath(); ctx.roundRect(p.x, p.y, 3, NH, [R, 0, 0, R]); ctx.fill();
+
+  // border outline
+  ctx.strokeStyle = noteBorder;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(p.x + 0.5, p.y + 0.5, p.w - 1, NH - 1, R); ctx.stroke();
+
+  // note name label (if wide enough)
+  if (p.w >= 32) {
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 8px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(p.note, p.x + 5, p.y + NH - 5);
+  }
+
+  // bounce glow
   if (p.b) {
-    ctx.fillStyle = 'rgba(127,119,221,0.18)';
-    ctx.beginPath(); ctx.ellipse(p.x + p.w / 2, p.y + 10, p.w / 2 - 2, 6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(140,120,255,0.15)';
+    ctx.beginPath(); ctx.ellipse(p.x + p.w/2, p.y + NH + 2, p.w/2, 5, 0, 0, Math.PI * 2); ctx.fill();
   }
 }
 
 /* ---------- BACKGROUND ---------- */
 function drawBG() {
-  // Sky
+  // ---- FL STUDIO PIANO ROLL BACKGROUND ----
+  // Dark DAW background
+  ctx.fillStyle = '#1a1d21';
+  ctx.fillRect(0, 0, W, H);
+
+  // Horizontal row bands (alternating dark / slightly lighter for white/black keys)
+  // Simulate piano roll rows — 12 semitones repeating
+  const rowH = 22;
+  const totalRows = Math.ceil(H / rowH) + 2;
+  const offsetY = (G.cam * 0.15) % rowH;
+
+  for (let r = 0; r < totalRows; r++) {
+    const y = r * rowH - offsetY;
+    // black key rows: 1,3,6,8,10 in 0-11 pattern
+    const semitone = r % 12;
+    const isBlack = [1,3,6,8,10].includes(semitone);
+    ctx.fillStyle = isBlack ? '#161820' : '#1e2128';
+    ctx.fillRect(0, y, W, rowH);
+    // very subtle horizontal separator
+    ctx.fillStyle = 'rgba(255,255,255,0.025)';
+    ctx.fillRect(0, y + rowH - 1, W, 1);
+  }
+
+  // Vertical beat/bar lines
+  const barW = Math.round(W / 4); // 4 bars visible
+  for (let b = 0; b <= 8; b++) {
+    const x = (b * barW / 2) - ((G.cam * 0) % (barW / 2));
+    const isBeat = b % 2 === 0;
+    ctx.strokeStyle = isBeat ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = isBeat ? 1 : 0.5;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+
+  // Beat numbers at top (below HUD)
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = 'bold 9px Arial';
+  ctx.textAlign = 'left';
+  for (let b = 1; b <= 4; b++) {
+    ctx.fillText(b, b * barW - barW + 4, HUD_H + 14);
+  }
+
+  // Playhead line (subtle, moving with score)
+  const phX = ((G.score / 60) % W);
+  ctx.strokeStyle = 'rgba(255,110,180,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(phX, HUD_H); ctx.lineTo(phX, H); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Piano keys strip on left edge
+  const keyW = 22;
+  ctx.fillStyle = '#111315';
+  ctx.fillRect(0, HUD_H, keyW, H - HUD_H);
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(keyW, HUD_H); ctx.lineTo(keyW, H); ctx.stroke();
+
+  // Draw piano keys
+  const noteNames = ['C','B','Bb','A','Ab','G','Gb','F','E','Eb','D','Db'];
+  for (let r = 0; r < totalRows; r++) {
+    const y = r * rowH - offsetY;
+    if (y < HUD_H || y > H) continue;
+    const semitone = r % 12;
+    const isBlack = [1,3,6,8,10].includes(semitone);
+    const noteName = noteNames[semitone % 12];
+    // key body
+    ctx.fillStyle = isBlack ? '#1a1a1a' : '#2a2c30';
+    ctx.fillRect(1, y + 1, keyW - 3, rowH - 2);
+    // note name
+    if (!isBlack) {
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = '7px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(noteName, keyW / 2, y + rowH - 5);
+    }
+  }
+
+  return; // skip old sky/buildings
+  // (dead code below kept for reference)
   const skyG = ctx.createLinearGradient(0, 0, 0, H * 0.6);
   skyG.addColorStop(0, '#050510'); skyG.addColorStop(1, '#0d0d1e');
   ctx.fillStyle = skyG; ctx.fillRect(0, 0, W, H);
@@ -880,12 +995,13 @@ function gloop() {
   // --- Platform collision ---
   G.plats.forEach(p => { if (p.mv) { p.x += p.dir * p.spd; if (p.x < 4 || p.x + p.w > W - 4) p.dir *= -1; } });
   if (G.vy > 0) {
-    const wf = G.py + 2 + G.cam;
+    const wf = G.py + 68 + G.cam;  // feet-only collision — player feet at +68px
     G.plats.forEach(p => {
-      if (G.px + 12 > p.x && G.px - 12 < p.x + p.w) {
+      if (G.px + 10 > p.x && G.px - 10 < p.x + p.w) {
         const pf = wf - G.vy;
-        if (pf <= p.y + 2 && wf >= p.y) {
-          G.py = p.y - G.cam - 2; G.vy = p.b ? JVB : JV;
+        if (pf <= p.y + 4 && wf >= p.y) {
+          G.py = p.y - G.cam - 68;
+          G.vy = p.b ? JVB : JV;
           sfxJump(p.b); spawnPt(G.px, G.py + G.cam, p.b);
         }
       }
