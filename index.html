@@ -212,10 +212,6 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   .dl-icon {font-size:18px}
   .bonus-lock {font-size:36px;margin:4px 0}
   /* ---- MOBILE PERFORMANCE ---- */
-  canvas {
-    image-rendering: auto;
-    display: block;
-  }
   #root {
     -webkit-overflow-scrolling: touch;
   }
@@ -985,16 +981,11 @@ function retryLevel() { document.getElementById('s-go').classList.remove('on'); 
 /* ---------- GAME LOOP ---------- */
 const GR = 0.44, JV = -16.5, JVB = -22, MS = 6.5, MF = 16, WALL_DAMP = 0.6;
 
-let lastTime = 0;
-function gloop(ts) {
+function gloop() {
   if (!G.run) return;
   G.loop = requestAnimationFrame(gloop);
-  // Fixed timestep: cap delta to avoid spiral of death on slow devices
-  const delta = Math.min((ts - lastTime) / (1000/60), 2.5);
-  lastTime = ts;
   G.af++;
-  // Scale physics by delta so speed is consistent across all devices
-  const DT = delta;
+  const DT = 1;
 
   // --- Touch / tilt control: finger position relative to player ---
   if (G.touchX !== null) {
