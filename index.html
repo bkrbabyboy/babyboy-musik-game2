@@ -467,8 +467,10 @@ function genPlats(lvl) {
   G.plats = [];
   let y = H - 60;
   G.plats.push({ x: W / 2 - 55, y, w: 110, b: false, mv: false, dir: 1, spd: 0, note: 'C4' });
-  y -= 62;
-  G.plats.push({ x: W / 2 - 32, y, w: 64, b: false, mv: false, dir: 1, spd: 0, note: 'G4' });
+  y -= 52;
+  G.plats.push({ x: W / 2 - 40, y, w: 80, b: false, mv: false, dir: 1, spd: 0, note: 'E4' });
+  y -= 56;
+  G.plats.push({ x: W / 2 - 30, y, w: 60, b: false, mv: false, dir: 1, spd: 0, note: 'G4' });
   y -= Math.round(d.gMin + Math.random() * (d.gMax - d.gMin));
   const _NOTE_NAMES = ['C3','D3','Eb3','F3','G3','Ab3','Bb3','C4','D4','Eb4','F4','G4','Ab4','A4','Bb4','C5','D5','Eb5','F5','G5'];
   while (y > -20000) {
@@ -957,7 +959,7 @@ function startGame() {
 
 function doLevel(lvl) {
   G.lvl = lvl; genPlats(lvl);
-  G.px = W / 2; G.py = H - 80; G.vx = 0; G.vy = 0; G.cam = 0; G.pts = []; G.touchX = null;
+  G.px = W / 2; G.py = H - 110; G.vx = 0; G.vy = -8; G.cam = 0; G.pts = []; G.touchX = null; // start with small upward velocity
   document.getElementById('hud').style.display = 'flex';
   canvas.style.display = 'block';
   ['s-title', 's-unlock', 's-win', 's-go'].forEach(id => document.getElementById(id).classList.remove('on'));
@@ -969,7 +971,7 @@ function doLevel(lvl) {
 function retryLevel() { document.getElementById('s-go').classList.remove('on'); doLevel(G.lvl); }
 
 /* ---------- GAME LOOP ---------- */
-const GR = 0.44, JV = -14.8, JVB = -20, MS = 6.5, MF = 16, WALL_DAMP = 0.6;
+const GR = 0.44, JV = -16.5, JVB = -22, MS = 6.5, MF = 16, WALL_DAMP = 0.6;
 
 function gloop() {
   if (!G.run) return;
