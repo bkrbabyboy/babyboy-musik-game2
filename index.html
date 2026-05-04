@@ -406,7 +406,10 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
     </a>
   </div>
   <div style="font-size:9px;color:#555;letter-spacing:2px;margin-top:4px">Merci d'avoir joué · BABYBOY MUSIK · 22 Mai</div>
-  <button class="btn-main" onclick="showFinalWin()" style="margin-top:10px">VOIR L'ALBUM COMPLET</button>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
+    <button class="btn-main" onclick="showFinalWin()" style="margin-top:0">VOIR LA TRACKLIST</button>
+    <button class="btn-sec" onclick="showTitle()" style="margin-top:0">MENU</button>
+  </div>
 </div>
 
 <!-- LEADERBOARD -->
@@ -450,7 +453,7 @@ const TRACK_FILES = [
 const TRACKS = [
   "ARABMONEY FREESTYLE","CLIQUE","MOWEEZY","PUSSYHOLIC",
   "SOIREE PRIVEE","339CANDY","MISS NAUGHTY","CHUPA CHUPS",
-  "10BANDS","FEMME LIKE U","CLUB31","EXTRA",
+  "10BANDZ","FEMME LIKE U","CLUB31","EXTRA",
   "JUSTE UN SIGNE","HOODBOYZ"
 ];
 
@@ -488,8 +491,11 @@ let UA = null, previewStart = 0, cdInt = null, prevElapsed = 0;
 function loadTrack(idx) {
   clearPrev();
   const file = TRACK_FILES[idx];
-  const setStatus = t => document.getElementById('ap-status').textContent = t;
-  const setBtn = h => document.getElementById('ap-btn').innerHTML = h;
+  const setStatus = t => { const el=document.getElementById('ap-status'); if(el) el.textContent=t; };
+  const setBtn = h => { const el=document.getElementById('ap-btn'); if(el) el.innerHTML=h; };
+
+  // Always make waves visible immediately
+  makeWaves('wv'); makeWaves('wv2');
 
   if (!file) {
     document.getElementById('ap-title').textContent = 'Bientot disponible';
@@ -505,15 +511,29 @@ function loadTrack(idx) {
   document.getElementById('cd-arc').style.strokeDashoffset = '0';
 
   UA = new Audio(file);
-  UA.preload = 'metadata';
-  UA.addEventListener('loadedmetadata', () => {
-    const max = Math.max(0, UA.duration - PREVIEW_DURATION - 2);
+  UA.preload = 'auto';
+  UA.volume = 1;
+
+  const tryPlay = () => {
+    const max = Math.max(0, (UA.duration || 60) - PREVIEW_DURATION - 2);
     previewStart = max > 5 ? Math.random() * max : 0;
     UA.currentTime = previewStart;
     setStatus('');
-    UA.play().then(() => { setBtn('&#9646;&#9646;'); startCD(); }).catch(() => setStatus('Appuie sur Play'));
-  });
-  UA.addEventListener('error', () => setStatus('Erreur de chargement'));
+    const p = UA.play();
+    if (p !== undefined) {
+      p.then(() => { setBtn('&#9646;&#9646;'); startCD(); })
+       .catch(() => { setStatus('Appuie sur ▶ pour ecouter'); setBtn('&#9654;'); });
+    } else {
+      setBtn('&#9646;&#9646;'); startCD();
+    }
+  };
+
+  if (UA.readyState >= 2) {
+    tryPlay();
+  } else {
+    UA.addEventListener('canplay', tryPlay, { once: true });
+    UA.addEventListener('error', () => setStatus('Erreur de chargement'), { once: true });
+  }
   UA.load();
 }
 
@@ -1181,10 +1201,14 @@ function showGO() {
   setTimeout(() => autoSubmitScore(), 500);
 }
 function makeWaves(id) {
-  const w = document.getElementById(id); if(!w) return; w.innerHTML = '';
+  const w = document.getElementById(id); if(!w) return;
+  w.innerHTML = '';
   for (let i = 0; i < 8; i++) {
     const b = document.createElement('div'); b.className = 'wb';
-    b.style.animationDelay = (i * .1) + 's'; b.style.height = Math.round(4 + Math.random() * 13) + 'px'; w.appendChild(b);
+    b.style.animationDelay = (i * .08) + 's';
+    b.style.height = Math.round(6 + Math.random() * 12) + 'px';
+    b.style.animationPlayState = 'running';
+    w.appendChild(b);
   }
 }
 
@@ -1389,17 +1413,30 @@ function openLB() {
   document.getElementById('s-lb').classList.add('on');
   renderLB();
 
+  // Always fetch fresh scores from server
   fetchScores().then(() => {
     renderLB();
     if (pendingScore) {
-      document.getElementById('lb-status').textContent = 'Entre ton pseudo pour sauvegarder ton score !';
+      const el = document.getElementById('lb-status');
+      if(el) el.textContent = 'Entre ton pseudo pour sauvegarder ton score !';
     }
   }).catch(() => {
-    document.getElementById('lb-status').textContent = 'Configure JSONBin pour activer les scores !';
+    const el = document.getElementById('lb-status');
+    if(el) el.textContent = 'Configure JSONBin pour activer les scores !';
   });
+
+  // Auto-refresh scores every 10 seconds while LB is open
+  if(window._lbRefresh) clearInterval(window._lbRefresh);
+  window._lbRefresh = setInterval(() => {
+    if(!document.getElementById('s-lb').classList.contains('on')) {
+      clearInterval(window._lbRefresh); return;
+    }
+    fetchScores().then(() => renderLB());
+  }, 10000);
 }
 
 function closeLB() {
+  if(window._lbRefresh) { clearInterval(window._lbRefresh); window._lbRefresh = null; }
   document.getElementById('s-lb').classList.remove('on');
   // NOTE: do NOT null pendingScore here — user may submit after closing
 
@@ -1454,11 +1491,13 @@ async function submitScore(silent = false) {
   if (!name) { if(!silent) document.getElementById('lb-status').textContent = 'Entre un pseudo !'; return; }
   if (!pendingScore) { if(!silent) document.getElementById('lb-status').textContent = 'Joue une partie pour soumettre un score !'; return; }
   if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') {
-    if(!silent) document.getElementById('lb-status').textContent = 'Configure JSONBin dans le code pour activer les scores en ligne !';
+    if(!silent) document.getElementById('lb-status').textContent = 'Configure JSONBin pour activer les scores !';
     return;
   }
-  // Save pseudo for next time
   saveName(name);
+  // Show instant feedback before network request
+  const statusEl = document.getElementById('lb-status');
+  if (statusEl && !silent) statusEl.textContent = 'Envoi...';
 
   document.getElementById('lb-status').textContent = 'Envoi en cours...';
   await fetchScores();
