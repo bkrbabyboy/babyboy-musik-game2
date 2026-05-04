@@ -411,22 +411,43 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <div id="s-bonus" class="screen">
   <div style="font-size:9px;color:#888;letter-spacing:5px;text-transform:uppercase">Niveau 14 complété</div>
   <div style="font-size:32px;font-weight:900;color:#ff6eb4;font-style:italic;text-shadow:2px 2px 0 #7f0040">HOODBOYZ<br>DEBLOQUE !</div>
-  <div class="wv" id="wv-bonus" style="justify-content:center"></div>
+  <div class="wv playing" id="wv-bonus" style="justify-content:center">
+    <div class="wb" style="animation-delay:0s;height:7px"></div>
+    <div class="wb" style="animation-delay:.09s;height:13px"></div>
+    <div class="wb" style="animation-delay:.18s;height:9px"></div>
+    <div class="wb" style="animation-delay:.27s;height:15px"></div>
+    <div class="wb" style="animation-delay:.36s;height:8px"></div>
+    <div class="wb" style="animation-delay:.45s;height:12px"></div>
+    <div class="wb" style="animation-delay:.54s;height:10px"></div>
+    <div class="wb" style="animation-delay:.63s;height:6px"></div>
+  </div>
   <div class="bonus-card">
     <div class="bonus-exclu">🎁 EXCLUSIVITE</div>
     <div class="bonus-lock">🔓</div>
     <div class="bonus-title" id="bonus-track-name">TITRE BONUS</div>
     <div class="bonus-sub">Morceau inédit · Réservé aux vrais fans</div>
-    <div class="wv" id="wv-bonus2" style="justify-content:center;margin:8px 0"></div>
+    <div class="wv playing" id="wv-bonus2" style="justify-content:center;margin:8px 0">
+    <div class="wb" style="animation-delay:.04s;height:11px"></div>
+    <div class="wb" style="animation-delay:.13s;height:7px"></div>
+    <div class="wb" style="animation-delay:.22s;height:15px"></div>
+    <div class="wb" style="animation-delay:.31s;height:9px"></div>
+    <div class="wb" style="animation-delay:.40s;height:13px"></div>
+    <div class="wb" style="animation-delay:.49s;height:6px"></div>
+    <div class="wb" style="animation-delay:.58s;height:14px"></div>
+    <div class="wb" style="animation-delay:.67s;height:8px"></div>
+  </div>
     <button id="bonus-dl-btn" onclick="downloadBonus()" class="btn-download">
       <span class="dl-icon">⬇</span>
       <span>TÉLÉCHARGER L'EXCLU</span>
     </button>
   </div>
+  <div id="bonus-ios-hint" style="display:none;font-size:10px;color:#ffb347;letter-spacing:1px;text-align:center;padding:8px 12px;border:1px solid #ffb34755;border-radius:6px;max-width:300px;line-height:1.5">
+    📱 Sur iPhone : appuie sur <b style="color:#fff">⬇ Télécharger</b> puis partage → <b style="color:#fff">Enregistrer dans Fichiers</b>
+  </div>
   <div style="font-size:9px;color:#555;letter-spacing:2px;margin-top:4px">Merci d'avoir joué · BABYBOY MUSIK · 22 Mai</div>
   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
-    <button class="btn-main" onclick="showFinalWin()" style="margin-top:0">VOIR LA TRACKLIST</button>
-    <button class="btn-sec" onclick="showTitle()" style="margin-top:0">MENU</button>
+    <button class="btn-main" onclick="showFinalWin()" style="margin-top:0">TRACKLIST</button>
+    <button class="btn-sec" onclick="closeBonusToMenu()" style="margin-top:0">MENU</button>
   </div>
 </div>
 
@@ -1083,14 +1104,22 @@ function spawnLvPt() {
 /* ---------- GAME FLOW ---------- */
 function showTitle() {
   clearPrev(); stopBG();
-  ['s-unlock', 's-win', 's-go', 'hud'].forEach(id => {
-    const el = document.getElementById(id);
-    el.classList ? el.classList.remove('on') : (el.style.display = 'none');
-  });
-  document.getElementById('hud').style.display = 'none';
-  document.getElementById('s-title').classList.add('on');
   if (G.loop) { cancelAnimationFrame(G.loop); G.loop = null; }
   G.run = false;
+  // Hide ALL screens
+  ['s-unlock','s-win','s-go','s-lb','s-bonus'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('on');
+  });
+  const hud = document.getElementById('hud');
+  if (hud) hud.style.display = 'none';
+  document.getElementById('s-title').classList.add('on');
+}
+
+function closeBonusToMenu() {
+  const bonus = document.getElementById('s-bonus');
+  if (bonus) bonus.classList.remove('on');
+  showTitle();
 }
 
 function startGame() {
@@ -1220,9 +1249,19 @@ function showGO() {
   setTimeout(() => autoSubmitScore(), 500);
 }
 function makeWaves(id) {
-  // Bars are pre-built in HTML — just start the animation
   const w = document.getElementById(id);
-  if (w) w.classList.add('playing');
+  if (!w) return;
+  // If no bars yet, build them
+  if (w.children.length === 0) {
+    for (let i = 0; i < 8; i++) {
+      const b = document.createElement('div');
+      b.className = 'wb';
+      b.style.animationDelay = (i * .08) + 's';
+      b.style.height = Math.round(6 + Math.random() * 12) + 'px';
+      w.appendChild(b);
+    }
+  }
+  w.classList.add('playing');
 }
 function stopWaves(id) {
   const w = document.getElementById(id);
@@ -1248,11 +1287,32 @@ function showUnlock(idx) {
 
 function downloadBonus() {
   if (!BONUS_TRACK.available) {
-    alert('Le morceau bonus arrive bientot ! 🎁');
+    alert('Le morceau bonus arrive bientot ! \u00f0\u009f\u008e\u0081');
     return;
   }
-  // Open in new tab — works on iOS without blocking navigation
-  window.open(BONUS_TRACK.file, '_blank');
+  // Create hidden <a> with download attr and click it
+  const a = document.createElement('a');
+  a.href = BONUS_TRACK.file;
+  a.download = (BONUS_TRACK.name || 'BONUS') + '.mp3';
+  a.target = '_blank';
+  // For iOS: show instructions since direct download is blocked
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    // Open audio in new tab — user can then use share sheet to save
+    const w = window.open(BONUS_TRACK.file, '_blank');
+    if (!w) {
+      // Popup blocked — fallback to same tab
+      document.location.href = BONUS_TRACK.file;
+    }
+    // Show iOS save instructions
+    setTimeout(() => {
+      document.getElementById('bonus-ios-hint').style.display = 'block';
+    }, 500);
+  } else {
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 function showBonusScreen() {
@@ -1711,9 +1771,11 @@ function drawTrail() {
 }
 </script>
 <script>
-// Register PWA Service Worker
+// Register PWA Service Worker (only on real domain, not preview)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    const isGitHub = location.hostname.includes('github.io') || location.hostname.includes('bkrbabyboy');
+    if (!isGitHub) return; // skip on preview/local
     navigator.serviceWorker.register('sw.js')
       .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
       .catch(err => console.log('[PWA] SW registration failed:', err));
