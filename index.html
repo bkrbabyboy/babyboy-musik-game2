@@ -465,7 +465,7 @@ function resize() {
 function genPlats(lvl) {
   const d = ldiff(lvl);
   G.plats = [];
-  let y = H - 60;
+  let y = H - 40;
   G.plats.push({ x: W / 2 - 55, y, w: 110, b: false, mv: false, dir: 1, spd: 0, note: 'C4' });
   y -= 52;
   G.plats.push({ x: W / 2 - 40, y, w: 80, b: false, mv: false, dir: 1, spd: 0, note: 'E4' });
@@ -959,7 +959,7 @@ function startGame() {
 
 function doLevel(lvl) {
   G.lvl = lvl; genPlats(lvl);
-  G.px = W / 2; G.py = H - 110; G.vx = 0; G.vy = -8; G.cam = 0; G.pts = []; G.touchX = null; // start with small upward velocity
+  G.px = W / 2; G.py = H - 128; G.vx = 0; G.vy = JV; G.cam = 0; G.pts = []; G.touchX = null; // spawn standing on first platform, auto-jump
   document.getElementById('hud').style.display = 'flex';
   canvas.style.display = 'block';
   ['s-title', 's-unlock', 's-win', 's-go'].forEach(id => document.getElementById(id).classList.remove('on'));
