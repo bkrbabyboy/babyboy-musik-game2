@@ -80,22 +80,16 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
   max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* UNLOCK */
-#s-unlock{background:#0a0a0a;z-index:25;gap:8px;text-align:center}
-.ubadge{font-size:10px;color:#ff6eb4;letter-spacing:4px;text-transform:uppercase;border:1px solid #ff6eb4;padding:7px 20px;border-radius:2px}
-.ucov{width:120px;height:120px;border:2px solid #ff6eb4;
-  overflow:hidden;flex-shrink:0;border-radius:8px}
+#s-unlock{background:#0a0a0a;z-index:25;gap:22px;padding:32px 20px;text-align:center}
+.ubadge{font-size:10px;color:#ff6eb4;letter-spacing:4px;text-transform:uppercase;border:1px solid #ff6eb4;padding:8px 22px;border-radius:2px;margin-bottom:4px}
+.ucov{width:140px;height:140px;border:2px solid #ff6eb4;overflow:hidden;flex-shrink:0;border-radius:8px}
 .ucov img{width:100%;height:100%;object-fit:cover}
-.unum{font-size:9px;color:#888;letter-spacing:3px;text-transform:uppercase}
-.uname{font-size:18px;font-weight:900;color:#fff;font-style:italic;
-  letter-spacing:1px;margin:4px 0 6px;max-width:180px}
+.unum{font-size:9px;color:#888;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px}
+.uname{font-size:20px;font-weight:900;color:#fff;font-style:italic;letter-spacing:1px;margin:8px 0 10px}
 
 
 to{height:16px}}
-.aplayer{
-  width:100%;max-width:340px;background:#111;
-  border:1px solid #ff6eb466;border-radius:12px;
-  padding:14px;display:flex;flex-direction:column;gap:10px;
-}
+.aplayer{width:100%;max-width:340px;background:#111;border:1px solid #ff6eb466;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
 .apctrl{display:flex;align-items:center;gap:12px}
 .apbtn{
   background:#ff6eb4;color:#000;border:none;width:44px;height:44px;
@@ -112,7 +106,7 @@ to{height:16px}}
 .approg{height:6px;background:#ff6eb4;border-radius:3px;
   width:0%;transition:width .1s linear;pointer-events:none}
 .apstatus{font-size:9px;color:#ff6eb4;text-align:center;min-height:14px}
-.prev-badge{font-size:9px;color:#ffb347;letter-spacing:2px;border:1px solid #ffb34755;padding:6px 14px;border-radius:4px}
+.prev-badge{font-size:9px;color:#ffb347;letter-spacing:2px;border:1px solid #ffb34755;padding:7px 16px;border-radius:4px;margin:4px 0}
 
 
 /* WIN */
@@ -316,7 +310,7 @@ to{height:16px}}
 <canvas id="gc"></canvas>
 
 <!-- Touch hint -->
-<div id="touch-hint">Tapote à gauche / droite de l'écran</div>
+<div id="touch-hint">Tapote à gauche / droite de ton écran</div>
 
 <!-- Level up overlay -->
 <div id="cinema-overlay">
@@ -1327,8 +1321,8 @@ updateCountdown();
 // Create a FREE bin at jsonbin.io — paste your BIN_ID below
 // Steps: 1. Go to jsonbin.io  2. Create account (free)
 // 3. New Bin with: {"scores":[]}  4. Copy the bin ID here
-const JSONBIN_ID = '69f8b967aaba8821976daf51';  // <-- remplace par ton vrai ID
-const JSONBIN_KEY = '$2a$10$Tlxw2IdJY3MwQqcSYQI5seOLfJASV1ntLLzEVLT1avroAqJSWe.Ae'; // <-- remplace par ta clé API JSONBin
+const JSONBIN_ID = '69f8b967aaba8821976daf51';
+const JSONBIN_KEY = '$2a$10$Tlxw2IdJY3MwQqcSYQI5seOLfJASV1ntLLzEVLT1avroAqJSWe.Ae';
 
 let lbScores = [];
 let pendingScore = null;
