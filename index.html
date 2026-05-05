@@ -310,7 +310,7 @@ to{height:16px}}
 <canvas id="gc"></canvas>
 
 <!-- Touch hint -->
-<div id="touch-hint">Tapote à gauche / droite de ton écran</div>
+<div id="touch-hint">Tape à gauche / droite de l'écran</div>
 
 <!-- Level up overlay -->
 <div id="cinema-overlay">
@@ -473,7 +473,6 @@ function stopBG() {
 let UA = null, previewStart = 0, cdInt = null, prevElapsed = 0;
 
 function loadTrack(idx) {
-  clearPrev();
   const file = TRACK_FILES[idx];
   const setBtn = h => { const el = document.getElementById('ap-btn'); if(el) el.innerHTML = h; };
 
@@ -490,9 +489,14 @@ function loadTrack(idx) {
   document.getElementById('ap-prog').style.width = '0%';
   document.getElementById('ap-time').textContent = '0:00 / 0:20';
 
-  UA = new Audio(file);
-  UA.preload = 'auto';
-  UA.volume = 1;
+  // Reuse preloaded UA if already loaded for this track
+  if (!UA || UA.src.indexOf(file.split('/').pop()) < 0) {
+    if (UA) { UA.pause(); UA.src = ''; }
+    UA = new Audio(file);
+    UA.preload = 'auto';
+    UA.volume = 1;
+    UA.load();
+  }
 
   const tryPlay = () => {
     const max = Math.max(0, (UA.duration || 60) - PREVIEW_DURATION - 2);
@@ -1140,6 +1144,14 @@ function gloop() {
     const ring = document.getElementById('lvring');
     ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = 'ringout .85s ease-out forwards';
     const lvo = document.getElementById('lvo'); lvo.classList.add('show');
+    // Preload audio NOW while level-up animation plays (1.9s head start)
+    const _preloadIdx = G.lvl - 1;
+    if (TRACK_FILES[_preloadIdx]) {
+      clearPrev();
+      UA = new Audio(TRACK_FILES[_preloadIdx]);
+      UA.preload = 'auto';
+      UA.load();
+    }
     setTimeout(() => { lvo.classList.remove('show'); showUnlock(G.lvl - 1); }, 1900);
     return;
   }
@@ -1401,8 +1413,7 @@ function openLB() {
       if(el) el.textContent = 'Entre ton pseudo pour sauvegarder ton score !';
     }
   }).catch(() => {
-    const el = document.getElementById('lb-status');
-    if(el) el.textContent = 'Configure JSONBin pour activer les scores !';
+    // Network error — show empty leaderboard
   });
 
   // Auto-refresh scores every 10 seconds while LB is open
@@ -1455,7 +1466,7 @@ function saveName(n) {
 async function autoSubmitScore() {
   const name = getSavedName();
   if (!name || !pendingScore) return;
-  if (JSONBIN_ID === '69f8b967aaba8821976daf51') return;
+  if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') return;
   // Pre-fill input
   const nameEl = document.getElementById('lb-name-input');
   if (nameEl) nameEl.value = name;
@@ -1470,7 +1481,7 @@ async function submitScore(silent = false) {
   const name = (nameEl ? nameEl.value || '' : getSavedName()).trim();
   if (!name) { if(!silent) document.getElementById('lb-status').textContent = 'Entre un pseudo !'; return; }
   if (!pendingScore) { if(!silent) document.getElementById('lb-status').textContent = 'Joue une partie pour soumettre un score !'; return; }
-  if (JSONBIN_ID === '69f8b967aaba8821976daf51') {
+  if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') {
     if(!silent) document.getElementById('lb-status').textContent = 'Configure JSONBin pour activer les scores !';
     return;
   }
