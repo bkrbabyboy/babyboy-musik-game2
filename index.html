@@ -489,13 +489,15 @@ function loadTrack(idx) {
   document.getElementById('ap-prog').style.width = '0%';
   document.getElementById('ap-time').textContent = '0:00 / 0:20';
 
-  // Reuse preloaded UA if already loaded for this track
-  if (!UA || UA.src.indexOf(file.split('/').pop()) < 0) {
-    if (UA) { UA.pause(); UA.src = ''; }
+  // Use preloaded audio if available (same file), then set position
+  if (UA) { UA.pause(); UA.src = ''; UA = null; }
+  if (window._preloadAudio && window._preloadAudio.src.includes(file.split('/').pop())) {
+    UA = window._preloadAudio;
+    window._preloadAudio = null;
+  } else {
     UA = new Audio(file);
     UA.preload = 'auto';
     UA.volume = 1;
-    UA.load();
   }
 
   const tryPlay = () => {
@@ -1144,13 +1146,13 @@ function gloop() {
     const ring = document.getElementById('lvring');
     ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = 'ringout .85s ease-out forwards';
     const lvo = document.getElementById('lvo'); lvo.classList.add('show');
-    // Preload audio NOW while level-up animation plays (1.9s head start)
+    // Preload audio into temp buffer during level-up animation
     const _preloadIdx = G.lvl - 1;
-    if (TRACK_FILES[_preloadIdx]) {
-      clearPrev();
-      UA = new Audio(TRACK_FILES[_preloadIdx]);
-      UA.preload = 'auto';
-      UA.load();
+    if (TRACK_FILES[_preloadIdx] && !window._preloadAudio) {
+      window._preloadAudio = new Audio(TRACK_FILES[_preloadIdx]);
+      window._preloadAudio.preload = 'auto';
+      window._preloadAudio.volume = 1;
+      window._preloadAudio.load();
     }
     setTimeout(() => { lvo.classList.remove('show'); showUnlock(G.lvl - 1); }, 1900);
     return;
