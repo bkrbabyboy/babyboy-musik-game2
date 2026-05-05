@@ -310,7 +310,7 @@ to{height:16px}}
 <canvas id="gc"></canvas>
 
 <!-- Touch hint -->
-<div id="touch-hint">Tapote à gauche / droite sur l'écran</div>
+<div id="touch-hint">Tapote à gauche / droite de l'écran</div>
 
 <!-- Level up overlay -->
 <div id="cinema-overlay">
@@ -338,34 +338,18 @@ to{height:16px}}
 <!-- UNLOCK -->
 <div id="s-unlock" class="screen">
   <div class="ubadge">Morceau debloque !</div>
-  <div class="wb" style="animation-delay:.08s;height:10px"></div>
-    <div class="wb" style="animation-delay:.16s;height:14px"></div>
-    <div class="wb" style="animation-delay:.24s;height:8px"></div>
-    <div class="wb" style="animation-delay:.32s;height:12px"></div>
-    <div class="wb" style="animation-delay:.40s;height:16px"></div>
-    <div class="wb" style="animation-delay:.48s;height:10px"></div>
-    <div class="wb" style="animation-delay:.56s;height:7px"></div>
-  </div>
-  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center">
+  <div style="display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%;max-width:340px">
     <div class="ucov"><img src="cover.jpg" id="ucov-img" alt="cover"></div>
-    <div style="text-align:left">
+    <div style="text-align:left;flex:1;min-width:120px">
       <div class="unum" id="u-num"></div>
       <div class="uname" id="u-name"></div>
-      <div class="wb" style="animation-delay:.13s;height:14px"></div>
-    <div class="wb" style="animation-delay:.21s;height:10px"></div>
-    <div class="wb" style="animation-delay:.29s;height:16px"></div>
-    <div class="wb" style="animation-delay:.37s;height:6px"></div>
-    <div class="wb" style="animation-delay:.45s;height:12px"></div>
-    <div class="wb" style="animation-delay:.53s;height:9px"></div>
-    <div class="wb" style="animation-delay:.61s;height:13px"></div>
-  </div>
     </div>
   </div>
   <div class="aplayer">
     <div class="apctrl">
       <div style="width:40px;height:40px;border-radius:50%;border:2px solid #ff6eb4;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#111">
         <span id="cd-num" style="font-size:13px;font-weight:900;color:#ff6eb4">20</span>
-      </div></div>
+      </div>
       <button class="apbtn" id="ap-btn" onclick="togglePlay()">&#9654;</button>
       <div class="apinfo">
         <div class="aptitle" id="ap-title">Chargement...</div>
