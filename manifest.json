@@ -2,8 +2,8 @@
   "name": "BABYBOY MUSIK - Jump Edition",
   "short_name": "BABYBOY MUSIK",
   "description": "Le jeu officiel de BKRBABYBOY — Saute sur les plateformes et débloque les 14 morceaux de l'album BABYBOY MUSIK !",
-  "start_url": "/babyboy-musik-game2/",
-  "scope": "/babyboy-musik-game2/",
+  "start_url": "/",
+  "scope": "/",
   "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#0a0a0a",
@@ -16,49 +16,49 @@
   ],
   "icons": [
     {
-      "src": "/babyboy-musik-game2/icons/icon-72.png",
+      "src": "icons/icon-72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-96.png",
+      "src": "icons/icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-128.png",
+      "src": "icons/icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-144.png",
+      "src": "icons/icon-144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-152.png",
+      "src": "icons/icon-152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-384.png",
+      "src": "icons/icon-384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/babyboy-musik-game2/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -66,7 +66,7 @@
   ],
   "screenshots": [
     {
-      "src": "/babyboy-musik-game2/cover.jpg",
+      "src": "cover.jpg",
       "sizes": "400x400",
       "type": "image/jpeg",
       "label": "BABYBOY MUSIK Jump Edition"
@@ -80,7 +80,7 @@
       "url": "/babyboy-musik-game2/",
       "icons": [
         {
-          "src": "/babyboy-musik-game2/icons/icon-96.png",
+          "src": "icons/icon-96.png",
           "sizes": "96x96"
         }
       ]
