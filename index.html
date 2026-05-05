@@ -417,6 +417,7 @@ to{height:16px}}
    ============================================================ */
 
 const PREVIEW_DURATION = 20;
+const CIRC = 2 * Math.PI * 19;
 
 const TRACK_FILES = [
   "audio/track_01.mp3",
@@ -473,96 +474,117 @@ function stopBG() {
 let UA = null, previewStart = 0, cdInt = null, prevElapsed = 0;
 
 function loadTrack(idx) {
+  // Clean up previous
+  clearPrev();
+
   const file = TRACK_FILES[idx];
   const setBtn = h => { const el = document.getElementById('ap-btn'); if(el) el.innerHTML = h; };
+  const setTime = t => { const el = document.getElementById('ap-time'); if(el) el.textContent = t; };
+  const fmt = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 
-  if (!file) {
-    document.getElementById('ap-title').textContent = 'Bientot disponible';
-    setBtn('?');
-    document.getElementById('cd-num').textContent = '--';
-    return;
-  }
-
-  document.getElementById('ap-title').textContent = TRACKS[idx];
+  // Reset UI
   setBtn('&#9654;');
-  document.getElementById('cd-num').textContent = '20';
-  document.getElementById('ap-prog').style.width = '0%';
-  document.getElementById('ap-time').textContent = '0:00 / 0:20';
+  const titleEl = document.getElementById('ap-title');
+  const progEl  = document.getElementById('ap-prog');
+  const cdEl    = document.getElementById('cd-num');
+  if(titleEl) titleEl.textContent = file ? TRACKS[idx] : 'Bientot disponible';
+  if(progEl)  progEl.style.width = '0%';
+  if(cdEl)    cdEl.textContent = '20';
+  setTime('0:00 / 0:20');
 
-  // Use preloaded audio if available (same file), then set position
-  if (UA) { UA.pause(); UA.src = ''; UA = null; }
-  if (window._preloadAudio && window._preloadAudio.src.includes(file.split('/').pop())) {
-    UA = window._preloadAudio;
-    window._preloadAudio = null;
-  } else {
-    UA = new Audio(file);
-    UA.preload = 'auto';
-    UA.volume = 1;
-  }
+  if (!file) return;
 
-  const tryPlay = () => {
-    const max = Math.max(0, (UA.duration || 60) - PREVIEW_DURATION - 2);
-    previewStart = max > 5 ? Math.random() * max : 0;
+  UA = new Audio(file);
+  UA.preload = 'auto';
+  UA.volume  = 1;
+
+  UA.addEventListener('loadedmetadata', () => {
+    // Start from 40-60% of track duration
+    const dur = UA.duration || 120;
+    previewStart = dur * (0.4 + Math.random() * 0.2);
     UA.currentTime = previewStart;
-    const p = UA.play();
-    if (p !== undefined) {
-      p.then(() => { setBtn('&#9646;&#9646;'); startCD(); })
-       .catch(() => setBtn('&#9654;')); // iOS blocked — user can tap play
-    } else {
-      setBtn('&#9646;&#9646;'); startCD();
-    }
-  };
+  }, { once: true });
 
-  if (UA.readyState >= 2) {
-    tryPlay();
-  } else {
-    UA.addEventListener('canplay', tryPlay, { once: true });
-    UA.addEventListener('error', () => {
-      document.getElementById('ap-title').textContent = 'Erreur de chargement';
-    }, { once: true });
-  }
+  UA.addEventListener('canplaythrough', () => {
+    // Auto-play as soon as buffered
+    if (UA.paused) {
+      UA.play()
+        .then(() => { setBtn('&#9646;&#9646;'); startCD(); })
+        .catch(() => setBtn('&#9654;'));
+    }
+  }, { once: true });
+
+  UA.addEventListener('error', () => {
+    if(titleEl) titleEl.textContent = 'Erreur de chargement';
+  }, { once: true });
+
   UA.load();
 }
 
 function startCD() {
-  prevElapsed = 0; clearInterval(cdInt);
+  clearInterval(cdInt);
   cdInt = setInterval(() => {
     if (!UA || UA.paused) return;
-    prevElapsed = UA.currentTime - previewStart;
-    const rem = Math.max(0, PREVIEW_DURATION - prevElapsed);
-    const pct = Math.min(1, prevElapsed / PREVIEW_DURATION);
-    document.getElementById('ap-prog').style.width = (pct * 100) + '%';
-    const fmt = t => `${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-    document.getElementById('ap-time').textContent = fmt(Math.min(prevElapsed, PREVIEW_DURATION)) + ' / 0:20';
-    
-    document.getElementById('cd-num').textContent = Math.ceil(rem);
-    if (prevElapsed >= PREVIEW_DURATION) {
-      UA.pause(); document.getElementById('ap-btn').innerHTML = '&#9654;';
-      document.getElementById('ap-status').textContent = 'Extrait termine - Album le 22 Mai !';
-      stopWaves('wv'); stopWaves('wv2');
-      clearInterval(cdInt);
+
+    const elapsed = UA.currentTime - previewStart;
+    const rem     = Math.max(0, PREVIEW_DURATION - elapsed);
+    const pct     = Math.min(1, elapsed / PREVIEW_DURATION);
+
+    const progEl = document.getElementById('ap-prog');
+    const cdEl   = document.getElementById('cd-num');
+    const timeEl = document.getElementById('ap-time');
+    const arcEl  = document.getElementById('cd-arc');
+
+    if(progEl) progEl.style.width = (pct * 100) + '%';
+    if(cdEl)   cdEl.textContent = Math.ceil(rem);
+    if(timeEl) {
+      const fmt = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+      timeEl.textContent = fmt(Math.min(elapsed, PREVIEW_DURATION)) + ' / 0:20';
     }
-  }, 100);
+    if(arcEl)  arcEl.style.strokeDashoffset = CIRC * (1 - pct);
+
+    if (elapsed >= PREVIEW_DURATION) {
+      UA.pause();
+      clearInterval(cdInt);
+      document.getElementById('ap-btn').innerHTML = '&#9654;';
+      const st = document.getElementById('ap-status');
+      if(st) st.textContent = 'Extrait termine - Album le 22 Mai !';
+    }
+  }, 150);
 }
 
 function togglePlay() {
   if (!UA) return;
+  const elapsed = UA.currentTime - previewStart;
   if (UA.paused) {
-    if (prevElapsed >= PREVIEW_DURATION) { UA.currentTime = previewStart; prevElapsed = 0; }
-    UA.play().then(() => { document.getElementById('ap-btn').innerHTML = '&#9646;&#9646;'; startCD(); }).catch(() => {});
-  } else { UA.pause(); document.getElementById('ap-btn').innerHTML = '&#9654;'; }
+    if (elapsed >= PREVIEW_DURATION) {
+      UA.currentTime = previewStart;
+    }
+    UA.play()
+      .then(() => { document.getElementById('ap-btn').innerHTML = '&#9646;&#9646;'; startCD(); })
+      .catch(() => {});
+  } else {
+    UA.pause();
+    document.getElementById('ap-btn').innerHTML = '&#9654;';
+  }
 }
+
 function seekAudio(e) {
   if (!UA) return;
-  const r = document.getElementById('ap-bar').getBoundingClientRect();
-  prevElapsed = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * PREVIEW_DURATION;
-  UA.currentTime = previewStart + prevElapsed;
+  const bar = document.getElementById('ap-bar');
+  if (!bar) return;
+  const r = bar.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  UA.currentTime = previewStart + pct * PREVIEW_DURATION;
 }
+
 function clearPrev() {
   clearInterval(cdInt);
-  if (UA) { UA.pause(); UA.src = ''; UA = null; }
-  prevElapsed = 0; previewStart = 0;
+  if (UA) { try { UA.pause(); } catch(e){} UA.src = ''; UA = null; }
+  if (window._preloadAudio) { try { window._preloadAudio.pause(); } catch(e){} window._preloadAudio = null; }
+  previewStart = 0;
 }
+
 
 /* ---------- SFX ---------- */
 function sfxJump(b) {
@@ -1146,14 +1168,7 @@ function gloop() {
     const ring = document.getElementById('lvring');
     ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = 'ringout .85s ease-out forwards';
     const lvo = document.getElementById('lvo'); lvo.classList.add('show');
-    // Preload audio into temp buffer during level-up animation
-    const _preloadIdx = G.lvl - 1;
-    if (TRACK_FILES[_preloadIdx] && !window._preloadAudio) {
-      window._preloadAudio = new Audio(TRACK_FILES[_preloadIdx]);
-      window._preloadAudio.preload = 'auto';
-      window._preloadAudio.volume = 1;
-      window._preloadAudio.load();
-    }
+
     setTimeout(() => { lvo.classList.remove('show'); showUnlock(G.lvl - 1); }, 1900);
     return;
   }
