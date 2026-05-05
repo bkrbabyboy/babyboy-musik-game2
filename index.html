@@ -89,10 +89,7 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 .unum{font-size:9px;color:#888;letter-spacing:3px;text-transform:uppercase}
 .uname{font-size:18px;font-weight:900;color:#fff;font-style:italic;
   letter-spacing:1px;margin:4px 0 6px;max-width:180px}
-.wv{display:flex;gap:3px;align-items:flex-end;height:20px;justify-content:center}
-.wb{width:4px;background:#ff6eb4;border-radius:1px;animation:wav .7s ease-in-out infinite alternate;animation-play-state:paused}
-.wv.playing .wb{animation-play-state:running}
-@keyframes wav{from{height:3px}to{height:16px}}
+to{height:16px}}
 .aplayer{
   width:100%;max-width:340px;background:#111;
   border:1px solid #ff6eb466;border-radius:12px;
@@ -383,8 +380,6 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <div id="s-unlock" class="screen">
   <div class="anim-wrap" id="unlock-anim-wrap">
   <div class="ubadge">Morceau debloque !</div>
-  <div class="wv" id="wv">
-    <div class="wb" style="animation-delay:0s;height:6px"></div>
     <div class="wb" style="animation-delay:.08s;height:10px"></div>
     <div class="wb" style="animation-delay:.16s;height:14px"></div>
     <div class="wb" style="animation-delay:.24s;height:8px"></div>
@@ -398,8 +393,6 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
     <div style="text-align:left">
       <div class="unum" id="u-num"></div>
       <div class="uname" id="u-name"></div>
-      <div class="wv" id="wv2">
-    <div class="wb" style="animation-delay:.05s;height:8px"></div>
     <div class="wb" style="animation-delay:.13s;height:14px"></div>
     <div class="wb" style="animation-delay:.21s;height:10px"></div>
     <div class="wb" style="animation-delay:.29s;height:16px"></div>
@@ -452,13 +445,11 @@ canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
 <div id="s-bonus" class="screen">
   <div style="font-size:9px;color:#888;letter-spacing:5px;text-transform:uppercase">Niveau 14 complété</div>
   <div style="font-size:32px;font-weight:900;color:#ff6eb4;font-style:italic;text-shadow:2px 2px 0 #7f0040">HOODBOYZ<br>DEBLOQUE !</div>
-  <div class="wv" id="wv-bonus" style="justify-content:center"></div>
   <div class="bonus-card">
     <div class="bonus-exclu">🎁 EXCLUSIVITE</div>
     <div class="bonus-lock">🔓</div>
     <div class="bonus-title" id="bonus-track-name">TITRE BONUS</div>
     <div class="bonus-sub">Morceau inédit · Réservé aux vrais fans</div>
-    <div class="wv" id="wv-bonus2" style="justify-content:center;margin:8px 0"></div>
     <button id="bonus-dl-btn" onclick="downloadBonus()" class="btn-download">
       <span class="dl-icon">⬇</span>
       <span>TÉLÉCHARGER L'EXCLU</span>
@@ -554,7 +545,6 @@ function loadTrack(idx) {
   const setBtn = h => { const el=document.getElementById('ap-btn'); if(el) el.innerHTML=h; };
 
   // Always make waves visible immediately
-  makeWaves('wv'); makeWaves('wv2');
 
   if (!file) {
     document.getElementById('ap-title').textContent = 'Bientot disponible';
@@ -611,8 +601,7 @@ function startCD() {
     if (prevElapsed >= PREVIEW_DURATION) {
       UA.pause(); document.getElementById('ap-btn').innerHTML = '&#9654;';
       document.getElementById('ap-status').textContent = 'Extrait termine - Album le 22 Mai !';
-      stopWaves('wv'); stopWaves('wv2');
-      clearInterval(cdInt);
+          clearInterval(cdInt);
     }
   }, 100);
 }
@@ -1260,20 +1249,10 @@ function showGO() {
   // Auto-submit if pseudo already known
   setTimeout(() => autoSubmitScore(), 500);
 }
-function makeWaves(id) {
-  // Bars are pre-built in HTML — just start the animation
-  const w = document.getElementById(id);
-  if (w) w.classList.add('playing');
-}
-function stopWaves(id) {
-  const w = document.getElementById(id);
-  if (w) w.classList.remove('playing');
-}
 
 function showUnlock(idx) {
   document.getElementById('u-num').textContent = 'MORCEAU ' + (idx + 1) + ' / 14';
   document.getElementById('u-name').textContent = TRACKS[idx];
-  makeWaves('wv'); makeWaves('wv2');
   loadTrack(idx);
   // Trigger animation: remove then re-add 'go' next frame so it fires every time
   const wrap = document.getElementById('unlock-anim-wrap');
@@ -1306,7 +1285,6 @@ function showBonusScreen() {
   ['s-unlock','s-win','s-go','s-title'].forEach(id => document.getElementById(id).classList.remove('on'));
   // Setup bonus track
   document.getElementById('bonus-track-name').textContent = BONUS_TRACK.name;
-  makeWaves('wv-bonus'); makeWaves('wv-bonus2');
 
   const dlBtn = document.getElementById('bonus-dl-btn');
   if (dlBtn) {
