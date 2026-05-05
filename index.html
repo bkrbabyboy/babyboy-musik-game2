@@ -359,7 +359,6 @@ to{height:16px}}
     <div class="apbar" id="ap-bar" onclick="seekAudio(event)">
       <div class="approg" id="ap-prog"></div>
     </div>
-    <div class="apstatus" id="ap-status"></div>
   </div>
   <div class="prev-badge">EXTRAIT 20 SEC · ALBUM COMPLET LE 22 MAI</div>
   <button class="btn-main" id="btn-cont" onclick="continueGame()" style="margin-top:8px"></button>
@@ -476,23 +475,20 @@ let UA = null, previewStart = 0, cdInt = null, prevElapsed = 0;
 function loadTrack(idx) {
   clearPrev();
   const file = TRACK_FILES[idx];
-  const setStatus = t => { const el=document.getElementById('ap-status'); if(el) el.textContent=t; };
-  const setBtn = h => { const el=document.getElementById('ap-btn'); if(el) el.innerHTML=h; };
-
-  // Always make waves visible immediately
+  const setBtn = h => { const el = document.getElementById('ap-btn'); if(el) el.innerHTML = h; };
 
   if (!file) {
     document.getElementById('ap-title').textContent = 'Bientot disponible';
-    setStatus('Ce morceau arrive bientot !'); setBtn('?');
-    document.getElementById('cd-num').textContent = '--'; return;
+    setBtn('?');
+    document.getElementById('cd-num').textContent = '--';
+    return;
   }
 
   document.getElementById('ap-title').textContent = TRACKS[idx];
-  setBtn('&#9654;'); setStatus('Chargement...');
+  setBtn('&#9654;');
   document.getElementById('cd-num').textContent = '20';
   document.getElementById('ap-prog').style.width = '0%';
   document.getElementById('ap-time').textContent = '0:00 / 0:20';
-  
 
   UA = new Audio(file);
   UA.preload = 'auto';
@@ -502,11 +498,10 @@ function loadTrack(idx) {
     const max = Math.max(0, (UA.duration || 60) - PREVIEW_DURATION - 2);
     previewStart = max > 5 ? Math.random() * max : 0;
     UA.currentTime = previewStart;
-    setStatus('');
     const p = UA.play();
     if (p !== undefined) {
-      p.then(() => { setBtn('&#9646;&#9646;'); makeWaves('wv'); makeWaves('wv2'); startCD(); })
-       .catch(() => { setStatus('Appuie sur ▶ pour ecouter'); setBtn('&#9654;'); });
+      p.then(() => { setBtn('&#9646;&#9646;'); startCD(); })
+       .catch(() => setBtn('&#9654;')); // iOS blocked — user can tap play
     } else {
       setBtn('&#9646;&#9646;'); startCD();
     }
@@ -516,7 +511,9 @@ function loadTrack(idx) {
     tryPlay();
   } else {
     UA.addEventListener('canplay', tryPlay, { once: true });
-    UA.addEventListener('error', () => setStatus('Erreur de chargement'), { once: true });
+    UA.addEventListener('error', () => {
+      document.getElementById('ap-title').textContent = 'Erreur de chargement';
+    }, { once: true });
   }
   UA.load();
 }
@@ -1195,7 +1192,10 @@ function showGO() {
 function showUnlock(idx) {
   document.getElementById('u-num').textContent = 'MORCEAU ' + (idx + 1) + ' / 14';
   document.getElementById('u-name').textContent = TRACKS[idx];
-  loadTrack(idx);
+  // Show screen first so it's visible
+  document.getElementById('s-unlock').classList.add('on');
+  // Small delay then load — gives iOS time to register the screen
+  setTimeout(() => loadTrack(idx), 100);
 
   if (idx >= 13) {
     // Level 14: show normal unlock first, then bonus screen
