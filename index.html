@@ -243,15 +243,7 @@ to{height:16px}}
   #lb-name-input::placeholder{color:#444}
   #lb-name-input:focus{border-color:#ff6eb4}
 
-/* UNLOCK ANIMATION */
-@keyframes uPop{0%{transform:scale(.96);opacity:.6}100%{transform:scale(1);opacity:1}}
-@keyframes uSlide{0%{transform:translateY(14px);opacity:0}100%{transform:translateY(0);opacity:1}}
-#s-unlock.on{animation:uPop .4s ease both}
-#s-unlock.on .ubadge{animation:uSlide .35s .08s ease both}
-#s-unlock.on .ucov{animation:uSlide .35s .15s ease both}
-#s-unlock.on .uname{animation:uSlide .35s .22s ease both}
-#s-unlock.on .aplayer{animation:uSlide .35s .3s ease both}
-#s-unlock.on #btn-cont{animation:uSlide .35s .38s ease both}
+
 </style>
 </head>
 <body>
@@ -318,7 +310,7 @@ to{height:16px}}
 <canvas id="gc"></canvas>
 
 <!-- Touch hint -->
-<div id="touch-hint">Tapote à gauche / droite de ton écran</div>
+<div id="touch-hint">Tapote à gauche / droite sur l'écran</div>
 
 <!-- Level up overlay -->
 <div id="cinema-overlay">
