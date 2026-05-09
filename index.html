@@ -1100,6 +1100,8 @@ function doLevel(lvl) {
   ['s-title', 's-unlock', 's-win', 's-go'].forEach(id => document.getElementById(id).classList.remove('on'));
   updateHUD(); clearPrev(); startBG(); G.run = true;
   if (G.loop) cancelAnimationFrame(G.loop);
+  // Start live score tracking (updates every 10s automatically)
+  startLiveScoreTracking();
   gloop();
 }
 
@@ -1210,12 +1212,13 @@ function updateHUD() {
   document.getElementById('h-unl').textContent = G.unl + '/14';
 }
 function showGO() {
+  stopLiveScoreTracking();
   document.getElementById('go-lvl').textContent = G.lvl;
   document.getElementById('go-sc').textContent = G.score;
   pendingScore = { score: G.score, level: G.lvl };
   document.getElementById('s-go').classList.add('on');
-  // Auto-submit if pseudo already known
-  setTimeout(() => autoSubmitScore(), 500);
+  // Auto-submit final score
+  setTimeout(() => autoSubmitScore(), 300);
 }
 
 function showUnlock(idx) {
@@ -1268,6 +1271,7 @@ function continueGame() {
   doLevel(G.lvl + 1);
 }
 function showWin() {
+  stopLiveScoreTracking();
   document.getElementById('hud').style.display = 'none'; stopBG();
   const tg = document.getElementById('win-tracks'); tg.innerHTML = '';
   TRACKS.forEach(t => { const p = document.createElement('div'); p.className = 'ttag'; p.textContent = t; tg.appendChild(p); });
@@ -1480,17 +1484,44 @@ function saveName(n) {
 }
 
 // Auto-submit score when game ends if pseudo already saved
+// ── LIVE SCORE TRACKING ──────────────────────────────────────
+// Updates score every 10s during gameplay, no user action needed
+let _liveScoreInterval = null;
+let _lastSubmittedScore = 0;
+
+function startLiveScoreTracking() {
+  stopLiveScoreTracking();
+  _liveScoreInterval = setInterval(async () => {
+    const name = getSavedName();
+    if (!name) return;
+    if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') return;
+    // Only update if score improved
+    if (G.score <= _lastSubmittedScore) return;
+    _lastSubmittedScore = G.score;
+    pendingScore = { score: G.score, level: G.lvl };
+    await submitScore(true);
+  }, 10000); // every 10 seconds
+}
+
+function stopLiveScoreTracking() {
+  if (_liveScoreInterval) {
+    clearInterval(_liveScoreInterval);
+    _liveScoreInterval = null;
+  }
+}
+
 async function autoSubmitScore() {
   const name = getSavedName();
-  if (!name || !pendingScore) return;
+  if (!name) return;
   if (JSONBIN_ID === 'VOTRE_BIN_ID_ICI') return;
+  if (!pendingScore) return;
   // Pre-fill input
   const nameEl = document.getElementById('lb-name-input');
   if (nameEl) nameEl.value = name;
   const statusEl = document.getElementById('go-auto-status');
   if (statusEl) statusEl.textContent = 'Envoi du score...';
   await submitScore(true);
-  if (statusEl) statusEl.textContent = pendingScore === null ? '✓ Score envoyé !' : '';
+  if (statusEl) statusEl.textContent = '✓ Score sauvegardé !';
 }
 
 async function submitScore(silent = false) {
@@ -1700,6 +1731,20 @@ function drawTrail() {
 }
 </script>
 <script>
+// ── STOP AUDIO WHEN APP CLOSED/HIDDEN ────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopBG();
+    if (typeof UA !== 'undefined' && UA) { try { UA.pause(); } catch(e) {} }
+  } else {
+    if (typeof G !== 'undefined' && G.run && !bgAudio) startBG();
+  }
+});
+window.addEventListener('pagehide', () => {
+  stopBG();
+  if (typeof UA !== 'undefined' && UA) { try { UA.pause(); } catch(e) {} }
+});
+
 // Register PWA Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
